@@ -37,11 +37,11 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
-import utils.ChatMessage;
+import dataobjects.ChatMessage;
+import dataobjects.User;
 import utils.ClickableListener;
 import utils.EmoticonListener;
 import utils.TextFieldKeyListener;
-import utils.User;
 
 /**
  * Main graphical user interface for the ad hoc chatroom

@@ -1,4 +1,4 @@
-package utils;
+package dataobjects;
 
 import java.awt.Color;
 

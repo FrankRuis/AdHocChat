@@ -9,6 +9,8 @@ import java.util.LinkedList;
 
 import javax.swing.JTextField;
 
+import dataobjects.ChatMessage;
+
 /**
  * Custom key adapter for the chat GUI
  * 
