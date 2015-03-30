@@ -1,14 +1,17 @@
 package dataobjects;
 
 import java.awt.Color;
+import java.io.Serializable;
 
 /**
  * Chat message object, containing information about the sender, destination and message
  * 
  * @author Frank
  */
-public class ChatMessage {
+public class ChatMessage implements Serializable {
 	
+	private static final long serialVersionUID = 5734199577340633482L;
+
 	private User user;
 	
 	private Color color;
@@ -151,5 +154,16 @@ public class ChatMessage {
 	 */
 	public void setItalic(boolean italic) {
 		this.italic = italic;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "ChatMessage [user=" + user + ", color=" + color + ", fontSize="
+				+ fontSize + ", font=" + font + ", bold=" + bold + ", italic="
+				+ italic + ", destination=" + destination + ", message="
+				+ message + "]";
 	}
 }

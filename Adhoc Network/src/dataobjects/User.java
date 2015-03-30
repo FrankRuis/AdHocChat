@@ -1,6 +1,7 @@
 package dataobjects;
 
 import java.awt.Color;
+import java.io.Serializable;
 import java.util.Random;
 
 /**
@@ -8,8 +9,10 @@ import java.util.Random;
  * 
  * @author Frank
  */
-public class User {
+public class User implements Serializable {
 
+	private static final long serialVersionUID = -4255785705635377381L;
+	
 	private String name;
 	private Color color;
 	
@@ -70,5 +73,13 @@ public class User {
 	 */
 	public void setColor(Color color) {
 		this.color = color;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "User [name=" + name + ", color=" + color + "]";
 	}
 }
