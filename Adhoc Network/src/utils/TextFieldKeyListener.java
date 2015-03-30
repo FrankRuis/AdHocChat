@@ -9,6 +9,7 @@ import java.util.LinkedList;
 
 import javax.swing.JTextField;
 
+import client.Client;
 import dataobjects.ChatMessage;
 
 /**
@@ -22,6 +23,7 @@ public class TextFieldKeyListener extends KeyAdapter {
 	private final int MAX_HISTORY = 10;
 	
 	private MainGUI gui;
+	private Client client;
 	private LinkedList<String> messageHistory;
 	
 	// Current position in the message history
@@ -31,11 +33,13 @@ public class TextFieldKeyListener extends KeyAdapter {
 	 * Initialize the key adapter
 	 * @param gui MainGUI object for future reference
 	 */
-	public TextFieldKeyListener(MainGUI gui) {
+	public TextFieldKeyListener(MainGUI gui, Client client) {
 		messageHistory = new LinkedList<>();
 		messageHistory.add("");
 		historyPos = 0;
+		
 		this.gui = gui;
+		this.client = client;
 	}
 	
 	@Override
@@ -66,8 +70,10 @@ public class TextFieldKeyListener extends KeyAdapter {
 				messageHistory.removeLast();
 			}
 			
-			// Create a chat message object and send it to the GUI
-			gui.append(new ChatMessage(gui.getCurrentUser(), Color.black, 16, "Calibri", false, false, message, gui.getActiveTab()));
+			// Create a chat message object and send it to the GUI and client
+			ChatMessage chatMessage = new ChatMessage(gui.getCurrentUser(), Color.black, 16, "Calibri", false, false, message, gui.getActiveTab());
+			gui.append(chatMessage);
+			client.sendChatMessage(chatMessage);
 			
 			source.setText("");
 			historyPos = 0;

@@ -37,11 +37,12 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
-import dataobjects.ChatMessage;
-import dataobjects.User;
 import utils.ClickableListener;
 import utils.EmoticonListener;
 import utils.TextFieldKeyListener;
+import client.Client;
+import dataobjects.ChatMessage;
+import dataobjects.User;
 
 /**
  * Main graphical user interface for the ad hoc chatroom
@@ -63,6 +64,8 @@ public class MainGUI implements ActionListener, Observer {
 	
 	private User currentUser;
 	private List<User> connectedUsers;
+	
+	private Client client;
 	
 	// Whether or not timestamps should be displayed for messages and notifications
 	private boolean useTimestamps = true;
@@ -252,14 +255,24 @@ public class MainGUI implements ActionListener, Observer {
 		Object source = e.getSource();
 		
 		if (source.equals(btnConnect)) {
-			//TODO connect button action
-			notify("Connecting to server", getActiveTab());
+			notify("Connecting...", getActiveTab());
+			
+			client = new Client();
+			client.addObserver(this);
+			inputField.addKeyListener(new TextFieldKeyListener(this, client));
+			
+			Thread t = new Thread(client);
+			t.start();
+			
+			notify("Connected.", getActiveTab());
 		}
 	}
 	
 	@Override
 	public void update(Observable o, Object arg) {
-		// TODO update method
+		ChatMessage message = (ChatMessage) arg;
+		
+		this.append(message);
 	}
 	
 	/**
@@ -327,7 +340,6 @@ public class MainGUI implements ActionListener, Observer {
 		
 		// Create the input text field
 		inputField = new JTextField();
-		inputField.addKeyListener(new TextFieldKeyListener(this));
 		inputPanel.add(inputField);
 		
 		// Create and add the button panel
