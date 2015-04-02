@@ -94,8 +94,8 @@ public class EmoticonListener implements DocumentListener {
 								StyleConstants.setIcon(attributeSet, regexMap.get(regex));
 			
 								// Remove the regex string and insert the icon
-								doc.remove(e.getOffset() + i, regex.length());
-								doc.insertString(e.getOffset() + i, regex, attributeSet);
+								doc.remove(e.getOffset() + i, matcher.group().length());
+								doc.insertString(e.getOffset() + i, matcher.group(), attributeSet);
 							}
 							
 							// Set i to the index of the next occurrence of the regex
