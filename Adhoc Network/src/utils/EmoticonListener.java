@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -33,7 +35,7 @@ public class EmoticonListener implements DocumentListener {
 		// Add emoticons and their regexes to the regexMap
 		try {
 			regexMap.put("Kappa", new ImageIcon(ImageIO.read(new File("Images/kappa.png"))));
-			regexMap.put(":D", new ImageIcon(ImageIO.read(new File("Images/smileyD.png"))));
+			regexMap.put(":[D|d]", new ImageIcon(ImageIO.read(new File("Images/smileyD.png"))));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -65,8 +67,19 @@ public class EmoticonListener implements DocumentListener {
 				
 				// Go through all possible emoticons
 				for (String regex : regexMap.keySet()) {
+					// Get the index of the emoticon in the insertion
+					Pattern pattern = Pattern.compile(regex);
+					Matcher matcher = pattern.matcher(insertion);
+					
 					// The index of the emoticon in the insertion
-					int i = insertion.indexOf(regex);
+					int i = -1;
+					if (matcher.find()) {
+						try {
+							i = matcher.start();
+						} catch (IllegalStateException e) {
+							
+						}
+					}
 					
 					try {
 						// If the text contained the regex of the emoticon
