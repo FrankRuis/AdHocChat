@@ -1,5 +1,7 @@
 package utils;
 
+import gui.MainGUI;
+
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -15,14 +17,16 @@ import javax.swing.text.Element;
 public class ClickableListener implements MouseListener {
 
 	private JTextPane textPane;
+	private MainGUI gui;
 	private String tag = "clickable";
 
 	/**
 	 * Constructor
 	 * @param textPane The JTextPane to listen in
 	 */
-	public ClickableListener(JTextPane textPane) {
+	public ClickableListener(JTextPane textPane, MainGUI gui) {
 		this.textPane = textPane;
+		this.gui = gui;
 	}
 
 	@Override
@@ -37,6 +41,7 @@ public class ClickableListener implements MouseListener {
 		// Check the element contained the clickable attribute
 		if (value != null) {
 			System.out.println("Clicked an element with value: " + value);
+			gui.newTab(value);
 		}
 	}
 

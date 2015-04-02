@@ -24,6 +24,12 @@ public class ReceiveBuffer extends Thread {
 	
 	private boolean connected = false;
 	
+	/**
+	 * Constructor
+	 * @param windowSize
+	 * @param socket
+	 * @param client
+	 */
 	public ReceiveBuffer(int windowSize, MulticastSocket socket, Client client) {
 		this.WINDOW_SIZE = windowSize;
 		this.buffer = new LinkedHashMap<>();
@@ -32,6 +38,13 @@ public class ReceiveBuffer extends Thread {
 		this.client = client;
 	}
 
+	/**
+	 * Disconnect
+	 */
+	public void disconnect() {
+		connected = false;
+	}
+	
 	/**
 	 * Extract a ChatMessage object out of a packet
 	 * @param packet
@@ -59,11 +72,15 @@ public class ReceiveBuffer extends Thread {
 			try {
 				DatagramPacket datagramPacket = new DatagramPacket(new byte[Packet.SIZE], Packet.SIZE);
 				socket.receive(datagramPacket);
-				Packet packet = new Packet(datagramPacket.getData());
-				
+				Packet packet = new Packet(datagramPacket);
+
+				// If the packet was not sent by us
 				if (packet.getSource() != Protocol.SOURCE) {
-					if (packet.isFlagSet(Packet.CHATMESSAGE)) {
-						receiveChatMessage(packet);
+					// If we are the destination
+					if (packet.getDestination() == Protocol.BROADCAST || packet.getDestination() == Protocol.SOURCE) {
+						if (packet.isFlagSet(Packet.CHATMESSAGE)) {
+							receiveChatMessage(packet);
+						}
 					}
 				}
 			} catch (IOException e) {

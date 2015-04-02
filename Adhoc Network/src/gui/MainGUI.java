@@ -10,16 +10,17 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -39,6 +40,7 @@ import javax.swing.text.StyledDocument;
 
 import utils.ClickableListener;
 import utils.EmoticonListener;
+import utils.Protocol;
 import utils.TextFieldKeyListener;
 import client.Client;
 import dataobjects.ChatMessage;
@@ -59,11 +61,15 @@ public class MainGUI implements ActionListener, Observer {
 	private JTabbedPane tabPanel;
 	private Map<String, JTextPane> chatPanes;
 	
-	private JButton btnConnect;
+	private JMenuBar menuBar;
+	private JMenu mActions;
+	private JMenuItem miConnect;
+	private JMenuItem miDisconnect;
+	
 	private JTextField inputField;
+	private TextFieldKeyListener inputFieldListener;
 	
 	private User currentUser;
-	private List<User> connectedUsers;
 	
 	private Client client;
 	
@@ -91,28 +97,31 @@ public class MainGUI implements ActionListener, Observer {
 	 * @param name The title of the tab
 	 */
 	public void newTab(String name) {
-		// Create a JTextPane for the chat messages
-		final JTextPane chatPane = new JTextPane();
-		chatPane.setContentType("text/plain; charset=UTF-8");
-		chatPane.setEditable(false);
-		
-		// Add a mouse listener to allow certain elements in the chat pane to be clickable
-		chatPane.addMouseListener(new ClickableListener(chatPane));
-		
-		// Add a document listener to check for emoticons
-		chatPane.getStyledDocument().addDocumentListener(new EmoticonListener());
-		
-		// Create a JScrollPane for the JTextPane
-		JScrollPane chatScrollPane = new JScrollPane();
-		chatScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		chatScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		chatScrollPane.setViewportView(chatPane);
-		
-		// Add the chat pane to the map with its name as key for future references
-		chatPanes.put(name, chatPane);
-		
-		// Add the JScrollPane to a new tab
-		tabPanel.addTab(name, null, chatScrollPane, null);
+		// If a tab with this name does not yet exist
+		if (!chatPanes.containsKey(name)) {
+			// Create a JTextPane for the chat messages
+			final JTextPane chatPane = new JTextPane();
+			chatPane.setContentType("text/plain; charset=UTF-8");
+			chatPane.setEditable(false);
+			
+			// Add a mouse listener to allow certain elements in the chat pane to be clickable
+			chatPane.addMouseListener(new ClickableListener(chatPane, this));
+			
+			// Add a document listener to check for emoticons
+			chatPane.getStyledDocument().addDocumentListener(new EmoticonListener());
+			
+			// Create a JScrollPane for the JTextPane
+			JScrollPane chatScrollPane = new JScrollPane();
+			chatScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+			chatScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+			chatScrollPane.setViewportView(chatPane);
+			
+			// Add the chat pane to the map with its name as key for future references
+			chatPanes.put(name, chatPane);
+			
+			// Add the JScrollPane to a new tab
+			tabPanel.addTab(name, null, chatScrollPane, null);
+		}
 	}
 	
 	/**
@@ -190,6 +199,11 @@ public class MainGUI implements ActionListener, Observer {
 		
 		// Make sure the scroll bar is set to the end of the text panel
 		chatPanes.get(message.getDestination()).setCaretPosition(doc.getLength());
+		
+		// If the message was added to a background tab
+		if (!message.getDestination().equals(getActiveTab())) {
+			//TODO message in non active tab
+		}
 	}
 	
 	/**
@@ -246,33 +260,73 @@ public class MainGUI implements ActionListener, Observer {
 	}
 	
 	/**
-	 * Called when a button is pressed
+	 * Called when a menu item is pressed
 	 * @param ActionEvent The action event
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// Save which button called the event
+		// Save which item called the event
 		Object source = e.getSource();
 		
-		if (source.equals(btnConnect)) {
-			notify("Connecting...", getActiveTab());
-			
-			client = new Client();
-			client.addObserver(this);
-			inputField.addKeyListener(new TextFieldKeyListener(this, client));
-			
-			Thread t = new Thread(client);
-			t.start();
-			
-			notify("Connected.", getActiveTab());
+		// If the connect menu item was pressed
+		if (source.equals(miConnect)) {
+			if (client == null) {
+				notify("Connecting...", getActiveTab());
+				
+				// Ask the user to enter a username
+				String username = (String) JOptionPane.showInputDialog(frame, "Enter your desired username:\n", "Username selection", JOptionPane.PLAIN_MESSAGE, null, null, "");
+				currentUser = new User(username, null);
+				
+				// Set the user's address
+				currentUser.setAddress(Protocol.SOURCE);
+				
+				// Create the client and add the GUI as an observer
+				client = new Client();
+				client.addObserver(this);
+				
+				// Create a KeyListener for the textfield
+				inputFieldListener = new TextFieldKeyListener(this, client);
+				inputField.addKeyListener(inputFieldListener);
+				
+				// Add the user to the client's list of connected users
+				client.addUser(currentUser);
+				
+				// Start the client thread
+				Thread t = new Thread(client);
+				t.start();
+			} else {
+				notify("You are already connected.", getActiveTab());
+			}
+		}
+		
+		// If the disconnect menu item was pressed
+		if (source.equals(this.miDisconnect)) {
+			if (client != null) {
+				inputField.removeKeyListener(inputFieldListener);
+				inputFieldListener = null;
+				client.disconnect();
+				client = null;
+			} else {
+				notify("You are not connected.", getActiveTab());
+			}
 		}
 	}
 	
 	@Override
 	public void update(Observable o, Object arg) {
-		ChatMessage message = (ChatMessage) arg;
+		// If the argument is a ChatMessage object
+		if (arg.getClass().equals(ChatMessage.class)) {
+			this.append((ChatMessage) arg);
+			return;
+		}
 		
-		this.append(message);
+		// If the argument is a String
+		if (arg.getClass().equals(String.class)) {
+			notify((String) arg, getActiveTab());
+			return;
+		}
+		
+		System.out.println(arg.getClass());
 	}
 	
 	/**
@@ -280,7 +334,6 @@ public class MainGUI implements ActionListener, Observer {
 	 */
 	public MainGUI() {
 		chatPanes = new HashMap<>();
-		connectedUsers = new ArrayList<>();
 		
 		// Initialize the GUI
 		initialize();
@@ -288,10 +341,6 @@ public class MainGUI implements ActionListener, Observer {
 		// Create the tab containing the main chat room
 		newTab("Chatroom");
 		newTab("Test tab");
-		
-		// TODO Create current user in connection method
-		currentUser = new User("Frank", null);
-		connectedUsers.add(currentUser);
 	}
 
 	/**
@@ -342,15 +391,20 @@ public class MainGUI implements ActionListener, Observer {
 		inputField = new JTextField();
 		inputPanel.add(inputField);
 		
-		// Create and add the button panel
-		JPanel buttonPanel = new JPanel();
-		southPanel.add(buttonPanel);
+		//Create the menu bar
+		menuBar = new JMenuBar();
+		mActions = new JMenu("Actions");
 		
-		// Create the connect button
-		btnConnect = new JButton("Connect");
-		buttonPanel.add(btnConnect);
-		btnConnect.setFocusable(false);
-		btnConnect.addActionListener(this);
+		miConnect = new JMenuItem("Connect");
+		miConnect.addActionListener(this);
+		miDisconnect = new JMenuItem("Disconnect");
+		miDisconnect.addActionListener(this);
+		
+		mActions.add(miConnect);
+		mActions.add(miDisconnect);
+		
+		menuBar.add(mActions);
+		frame.setJMenuBar(menuBar);
 		
 		// Create and add the west panel
 		JPanel westPanel = new JPanel();

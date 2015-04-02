@@ -29,6 +29,13 @@ public class SendBuffer extends Thread {
 	private InetAddress group;
 	private int port;
 	
+	/**
+	 * Constructor
+	 * @param windowSize
+	 * @param socket
+	 * @param group
+	 * @param port
+	 */
 	public SendBuffer(int windowSize, MulticastSocket socket, InetAddress group, int port) {
 		this.socket = socket;
 		this.WINDOW_SIZE = windowSize;
@@ -38,32 +45,41 @@ public class SendBuffer extends Thread {
 		this.port = port;
 		this.connected = true;
 	}
+	
+	/**
+	 * Disconnect
+	 */
+	public void disconnect() {
+		connected = false;
+	}
 
 	/**
 	 * Send a ChatMessage object
 	 * @param message
 	 */
 	public void sendChatMessage(ChatMessage message) {
-		try {
-			ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-			ObjectOutputStream objectStream = new ObjectOutputStream(new BufferedOutputStream(byteStream));
-
-			objectStream.writeObject(message);
-			objectStream.flush();
-			
-			byte[] sendBuffer = byteStream.toByteArray();
-			Packet packet = new Packet(sendBuffer.length + Packet.HEADER_SIZE);
-			packet.setSource(Protocol.SOURCE);
-			packet.setHops(Protocol.MAXHOPS);
-			packet.setFlags(false, true);
-			packet.setPayload(sendBuffer);
-			
-			byteStream.close();
-			objectStream.close();
-			
-			socket.send(new DatagramPacket(packet.getData(), packet.length(), group, port));
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (connected) {
+			try {
+				ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+				ObjectOutputStream objectStream = new ObjectOutputStream(new BufferedOutputStream(byteStream));
+	
+				objectStream.writeObject(message);
+				objectStream.flush();
+				
+				byte[] sendBuffer = byteStream.toByteArray();
+				Packet packet = new Packet(sendBuffer.length + Packet.HEADER_SIZE);
+				packet.setSource(Protocol.SOURCE);
+				packet.setHops(Protocol.MAXHOPS);
+				packet.setFlags(false, true);
+				packet.setPayload(sendBuffer);
+				
+				byteStream.close();
+				objectStream.close();
+				
+				socket.send(new DatagramPacket(packet.getData(), packet.length(), group, port));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

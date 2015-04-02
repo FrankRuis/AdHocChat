@@ -32,6 +32,14 @@ public class ChatMessage implements Serializable {
 	
 	/**
 	 * Constructor with assignments
+	 * @param user
+	 * @param color
+	 * @param fontSize
+	 * @param font
+	 * @param bold
+	 * @param italic
+	 * @param message
+	 * @param destination
 	 */
 	public ChatMessage(User user, Color color, int fontSize, String font, boolean bold, boolean italic, String message, String destination) {
 		this.user = user;

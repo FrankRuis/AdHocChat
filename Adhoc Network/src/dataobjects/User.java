@@ -16,6 +16,8 @@ public class User implements Serializable {
 	private String name;
 	private Color color;
 	
+	private int address;
+	
 	/**
 	 * Constructor with default values
 	 */
@@ -36,7 +38,11 @@ public class User implements Serializable {
 	 * @param color The color for the username, random color is chosen if null
 	 */
 	public User(String name, Color color) {
-		this.name = name;
+		if (name != null && !name.trim().equals("")) {
+			this.name = name;
+		} else {
+			this.name = "Anonymous";
+		}
 		
 		// Set the color or choose a random bright color if the given color is null
 		Random random = new Random();
@@ -75,11 +81,25 @@ public class User implements Serializable {
 		this.color = color;
 	}
 
+	/**
+	 * @return the address
+	 */
+	public int getAddress() {
+		return address;
+	}
+
+	/**
+	 * @param address the address to set
+	 */
+	public void setAddress(int address) {
+		this.address = address;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "User [name=" + name + ", color=" + color + "]";
+		return "User [name=" + name + ", color=" + color + ", address=" + address + "]";
 	}
 }

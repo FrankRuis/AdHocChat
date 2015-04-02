@@ -5,7 +5,7 @@ public class Protocol {
 	/**
 	 * Source address
 	 */
-	public static final int SOURCE = 2;
+	public static final int SOURCE = 1;
 	
 	/**
 	 * Broadcast address

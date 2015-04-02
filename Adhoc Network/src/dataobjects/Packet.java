@@ -1,5 +1,6 @@
 package dataobjects;
 
+import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -44,6 +45,15 @@ public class Packet {
 	public Packet(byte[] data) {
 		buffer = ByteBuffer.allocate(data.length);
 		buffer.put(data);
+	}
+	
+	/**
+	 * Constructor for reading a received DatagramPacket
+	 * @param packet
+	 */
+	public Packet(DatagramPacket packet) {
+		buffer = ByteBuffer.allocate(Packet.SIZE);
+		buffer.put(packet.getData());
 	}
 	
 	/**
