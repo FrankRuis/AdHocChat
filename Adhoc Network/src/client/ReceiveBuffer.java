@@ -1,5 +1,9 @@
 package client;
 
+import dataobjects.ChatMessage;
+import dataobjects.Packet;
+import utils.Protocol;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -8,10 +12,6 @@ import java.net.DatagramPacket;
 import java.net.MulticastSocket;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import utils.Protocol;
-import dataobjects.ChatMessage;
-import dataobjects.Packet;
 
 public class ReceiveBuffer extends Thread {
 
@@ -59,9 +59,7 @@ public class ReceiveBuffer extends Thread {
 		    
 		    byteStream.close();
 		    objectStream.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
+		} catch (ClassNotFoundException | IOException e) {
 			e.printStackTrace();
 		}
 	}

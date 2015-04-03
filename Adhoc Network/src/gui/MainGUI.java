@@ -94,11 +94,11 @@ public class MainGUI implements ActionListener, Observer {
 	
 	/**
 	 * Return an AttributeSet with the given values
-	 * @param color
-	 * @param font
-	 * @param size
-	 * @param bold
-	 * @param italic
+	 * @param color The color
+	 * @param font The font name
+	 * @param size The font size
+	 * @param bold Whether or not the text should be bolded
+	 * @param italic Whether or not the text should be italicized
 	 * @return The attribute set
 	 */
 	public AttributeSet getTextStyle(Color color, String font, int size, boolean bold, boolean italic) {
@@ -341,7 +341,7 @@ public class MainGUI implements ActionListener, Observer {
 		tabPanel.setFocusable(false);
 		tabPanel.addMouseListener(new TabMouseListener(tabPanel));
 		frame.getContentPane().add(tabPanel, BorderLayout.CENTER);
-		
+
 		// Create and add the north panel
 		JPanel northPanel = new JPanel();
 		frame.getContentPane().add(northPanel, BorderLayout.NORTH);
