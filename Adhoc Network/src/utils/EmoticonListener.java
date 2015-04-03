@@ -1,21 +1,20 @@
 package utils;
 
-import java.awt.EventQueue;
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Document listener that checks for emoticons and inserts them in the document that was changed
@@ -44,7 +43,7 @@ public class EmoticonListener implements DocumentListener {
 	@Override
 	public void changedUpdate(DocumentEvent e) {	
 	}
-	
+
 	/**
 	 * Insert emoticons in users' messages if applicable
 	 */
@@ -70,20 +69,14 @@ public class EmoticonListener implements DocumentListener {
 					// Get the index of the emoticon in the insertion
 					Pattern pattern = Pattern.compile(regex);
 					Matcher matcher = pattern.matcher(insertion);
-					
-					// The index of the emoticon in the insertion
-					int i = -1;
-					if (matcher.find()) {
-						try {
-							i = matcher.start();
-						} catch (IllegalStateException e) {
-							
-						}
-					}
+
 					
 					try {
 						// If the text contained the regex of the emoticon
-						while (i >= 0) {
+						while (matcher.find()) {
+							// The index of the emoticon in the insertion
+							int i = matcher.start();
+
 							// Make an attributeset with the attributes of the regex
 							SimpleAttributeSet attributeSet = new SimpleAttributeSet(doc.getCharacterElement(e.getOffset() + i).getAttributes());
 							
@@ -97,12 +90,9 @@ public class EmoticonListener implements DocumentListener {
 								doc.remove(e.getOffset() + i, matcher.group().length());
 								doc.insertString(e.getOffset() + i, matcher.group(), attributeSet);
 							}
-							
-							// Set i to the index of the next occurrence of the regex
-							i = insertion.indexOf(regex, i + regex.length());
 						}
 					} catch (BadLocationException ex) {
-						
+						ex.printStackTrace();
 					}
 				}
 			}
