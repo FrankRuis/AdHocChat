@@ -34,7 +34,7 @@ public class EmoticonListener implements DocumentListener {
 		
 		// Add emoticons and their regexes to the regexMap
 		try {
-			regexMap.put("Kappa", new ImageIcon(ImageIO.read(new File("Images/kappa.png"))));
+			regexMap.put("[K|k]appa", new ImageIcon(ImageIO.read(new File("Images/kappa.png"))));
 			regexMap.put(":[D|d]", new ImageIcon(ImageIO.read(new File("Images/smileyD.png"))));
 		} catch (IOException e) {
 			e.printStackTrace();
