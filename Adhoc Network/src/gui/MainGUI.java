@@ -1,50 +1,18 @@
 package gui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.GridLayout;
-import java.awt.Insets;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.border.EmptyBorder;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Element;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
-import javax.swing.text.StyledDocument;
-
-import utils.ClickableListener;
-import utils.EmoticonListener;
-import utils.Protocol;
-import utils.TextFieldKeyListener;
 import client.Client;
 import dataobjects.ChatMessage;
 import dataobjects.User;
+import utils.*;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.text.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Main graphical user interface for the ad hoc chatroom
@@ -60,9 +28,8 @@ public class MainGUI implements ActionListener, Observer {
 
 	private JTabbedPane tabPanel;
 	private Map<String, JTextPane> chatPanes;
-	
-	private JMenuBar menuBar;
-	private JMenu mActions;
+	private Map<String, JScrollPane> scrollPanes;
+
 	private JMenuItem miConnect;
 	private JMenuItem miDisconnect;
 	
@@ -118,7 +85,8 @@ public class MainGUI implements ActionListener, Observer {
 			
 			// Add the chat pane to the map with its name as key for future references
 			chatPanes.put(name, chatPane);
-			
+			scrollPanes.put(name, chatScrollPane);
+
 			// Add the JScrollPane to a new tab
 			tabPanel.addTab(name, null, chatScrollPane, null);
 		}
@@ -202,7 +170,7 @@ public class MainGUI implements ActionListener, Observer {
 		
 		// If the message was added to a background tab
 		if (!message.getDestination().equals(getActiveTab())) {
-			//TODO message in non active tab
+			tabPanel.setForegroundAt(tabPanel.indexOfComponent(scrollPanes.get(message.getDestination())), Color.red);
 		}
 	}
 	
@@ -261,7 +229,7 @@ public class MainGUI implements ActionListener, Observer {
 	
 	/**
 	 * Called when a menu item is pressed
-	 * @param ActionEvent The action event
+	 * @param e The action event
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -334,6 +302,7 @@ public class MainGUI implements ActionListener, Observer {
 	 */
 	public MainGUI() {
 		chatPanes = new HashMap<>();
+		scrollPanes = new HashMap<>();
 		
 		// Initialize the GUI
 		initialize();
@@ -363,13 +332,14 @@ public class MainGUI implements ActionListener, Observer {
 		frame.setIconImage(Toolkit.getDefaultToolkit().getImage("Images/chat.png"));
 		frame.setTitle("Chat");
 		frame.setSize(500, 500);
-		frame.setMinimumSize(new Dimension(300,300));
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setMinimumSize(new Dimension(300, 300));
+		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.setLocationRelativeTo(null);
 		
 		// Initialize the tabbed pane
 		tabPanel = new JTabbedPane(JTabbedPane.TOP);
 		tabPanel.setFocusable(false);
+		tabPanel.addMouseListener(new TabMouseListener(tabPanel));
 		frame.getContentPane().add(tabPanel, BorderLayout.CENTER);
 		
 		// Create and add the north panel
@@ -392,8 +362,8 @@ public class MainGUI implements ActionListener, Observer {
 		inputPanel.add(inputField);
 		
 		//Create the menu bar
-		menuBar = new JMenuBar();
-		mActions = new JMenu("Actions");
+		JMenuBar menuBar = new JMenuBar();
+		JMenu mActions = new JMenu("Actions");
 		
 		miConnect = new JMenuItem("Connect");
 		miConnect.addActionListener(this);
