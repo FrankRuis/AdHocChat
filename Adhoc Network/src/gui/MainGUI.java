@@ -91,6 +91,17 @@ public class MainGUI implements ActionListener, Observer {
 			tabPanel.addTab(name, null, chatScrollPane, null);
 		}
 	}
+
+	/**
+	 * Remove the tab with the given index
+	 * @param i The tab index
+	 */
+	public void removeTab(int i) {
+		String title = tabPanel.getTitleAt(i);
+		tabPanel.removeTabAt(i);
+		chatPanes.remove(title);
+		scrollPanes.remove(title);
+	}
 	
 	/**
 	 * Return an AttributeSet with the given values
@@ -291,10 +302,7 @@ public class MainGUI implements ActionListener, Observer {
 		// If the argument is a String
 		if (arg.getClass().equals(String.class)) {
 			notify((String) arg, getActiveTab());
-			return;
 		}
-		
-		System.out.println(arg.getClass());
 	}
 	
 	/**
@@ -310,6 +318,14 @@ public class MainGUI implements ActionListener, Observer {
 		// Create the tab containing the main chat room
 		newTab("Chatroom");
 		newTab("Test tab");
+	}
+
+	/**
+	 * Get the tab pane
+	 * @return The JTabbedPane
+	 */
+	public JTabbedPane getTabPane() {
+		return tabPanel;
 	}
 
 	/**
@@ -339,7 +355,7 @@ public class MainGUI implements ActionListener, Observer {
 		// Initialize the tabbed pane
 		tabPanel = new JTabbedPane(JTabbedPane.TOP);
 		tabPanel.setFocusable(false);
-		tabPanel.addMouseListener(new TabMouseListener(tabPanel));
+		tabPanel.addMouseListener(new TabMouseListener(this));
 		frame.getContentPane().add(tabPanel, BorderLayout.CENTER);
 
 		// Create and add the north panel
