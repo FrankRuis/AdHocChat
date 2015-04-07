@@ -34,7 +34,7 @@ public class TabMouseListener implements MouseListener {
             // If the right mouse button was pressed
             if (e.getButton() == MouseEvent.BUTTON3) {
                 // Don't allow the main tab to be removed
-                if (!gui.getTabPane().getTitleAt(tab).equals("Chatroom")) {
+                if (!gui.getTabPane().getTitleAt(tab).equals(Protocol.MAINCHAT)) {
                     // Remove the tab
                     gui.removeTab(tab);
                 } else {

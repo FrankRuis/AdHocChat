@@ -1,5 +1,9 @@
 package client;
 
+import dataobjects.ChatMessage;
+import dataobjects.Packet;
+import utils.Protocol;
+
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,10 +15,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import utils.Protocol;
-import dataobjects.ChatMessage;
-import dataobjects.Packet;
 
 public class SendBuffer extends Thread {
 
@@ -54,10 +54,11 @@ public class SendBuffer extends Thread {
 	}
 
 	/**
-	 * Send a ChatMessage object
+	 * Send a ChatMessage object to the given destination
 	 * @param message
+	 * @param destination
 	 */
-	public void sendChatMessage(ChatMessage message) {
+	public void sendChatMessage(ChatMessage message, int destination) {
 		if (connected) {
 			try {
 				ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
@@ -69,6 +70,7 @@ public class SendBuffer extends Thread {
 				byte[] sendBuffer = byteStream.toByteArray();
 				Packet packet = new Packet(sendBuffer.length + Packet.HEADER_SIZE);
 				packet.setSource(Protocol.SOURCE);
+				packet.setDestination(destination);
 				packet.setHops(Protocol.MAXHOPS);
 				packet.setFlags(false, true);
 				packet.setPayload(sendBuffer);
@@ -82,7 +84,30 @@ public class SendBuffer extends Thread {
 			}
 		}
 	}
-	
+
+	/**
+	 * Send a message to the given destination
+	 * @param message
+	 * @param destination
+	 */
+	public void sendMessage(String message, int destination) {
+		if (connected) {
+			try {
+				byte[] sendBuffer = message.getBytes();
+				Packet packet = new Packet(sendBuffer.length + Packet.HEADER_SIZE);
+				packet.setSource(Protocol.SOURCE);
+				packet.setDestination(destination);
+				packet.setHops(Protocol.MAXHOPS);
+				packet.setFlags(false, false);
+				packet.setPayload(sendBuffer);
+
+				socket.send(new DatagramPacket(packet.getData(), packet.length(), group, port));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	@Override
 	public void run() {
 		while (connected) {

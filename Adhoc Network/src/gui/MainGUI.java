@@ -60,6 +60,16 @@ public class MainGUI implements ActionListener, Observer {
 	}
 
 	/**
+	 * Start a private chat with the given user
+	 * @param name The name of the user
+	 */
+	public void startPrivateChat(String name) {
+		newTab(name);
+		client.addDestination(name, true);
+		client.sendMessage(Protocol.PRIVCHAT + " " + currentUser.getName(), name);
+	}
+
+	/**
 	 * Add a new tab to the JTabbedPane
 	 * @param name The title of the tab
 	 */
@@ -140,48 +150,54 @@ public class MainGUI implements ActionListener, Observer {
 	 * @param message A ChatMessage object
 	 */
 	public void append(ChatMessage message) {
-		// Get the styled document of the chat pane given by the ChatMessage object
-		StyledDocument doc = chatPanes.get(message.getDestination()).getStyledDocument();
-		
-		// Create the attribute set for the username and make the username clickable
-		AttributeSet unameAset = getTextStyle(message.getUser().getColor(), "Tahoma", 12, true, false);
-		unameAset = makeClickable(unameAset, message.getUser().getName());
-		
-		// Create an attribute set with the parameters given by the ChatMessage object
-		AttributeSet attributeSet = getTextStyle(message.getColor(), message.getFont(), message.getFontSize(), message.isBold(), message.isItalic());
-		
-		// Create an attribute set for the timestamps
-		AttributeSet timeAset = getTextStyle(Color.gray, "Calibri", 12, false, false);
-		
-		// Create a timestamp
-		SimpleDateFormat sdf = new SimpleDateFormat("[HH:mm]");
-		String time = sdf.format(new Date());
-		
-		// Insert the chat message into the document
-		try {
-			if (useTimestamps) doc.insertString(doc.getLength(), time  + " ", timeAset);
-			doc.insertString(doc.getLength(), message.getUser().getName()  + ": ", unameAset);
-			doc.insertString(doc.getLength(), message.getMessage()  + "\n", attributeSet);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-		}
-		
-		// Remove first line if the character limit has been reached
-		if (doc.getLength() > MAX_CHARS) {
-			Element firstLine = doc.getDefaultRootElement().getElement(0);
+		// Get the destination chat pane
+		String destination = (chatPanes.get(message.getDestination()) != null) ? message.getDestination() : message.getUser().getName();
+
+		// If a chatpane for the destination exists
+		if (chatPanes.get(destination) != null) {
+			// Get the styled document of the chat pane given by the ChatMessage object
+			StyledDocument doc = chatPanes.get(destination).getStyledDocument();
+
+			// Create the attribute set for the username and make the username clickable
+			AttributeSet unameAset = getTextStyle(message.getUser().getColor(), "Tahoma", 12, true, false);
+			unameAset = makeClickable(unameAset, message.getUser().getName());
+
+			// Create an attribute set with the parameters given by the ChatMessage object
+			AttributeSet attributeSet = getTextStyle(message.getColor(), message.getFont(), message.getFontSize(), message.isBold(), message.isItalic());
+
+			// Create an attribute set for the timestamps
+			AttributeSet timeAset = getTextStyle(Color.gray, "Calibri", 12, false, false);
+
+			// Create a timestamp
+			SimpleDateFormat sdf = new SimpleDateFormat("[HH:mm]");
+			String time = sdf.format(new Date());
+
+			// Insert the chat message into the document
 			try {
-				doc.remove(firstLine.getStartOffset(), firstLine.getEndOffset());
+				if (useTimestamps) doc.insertString(doc.getLength(), time + " ", timeAset);
+				doc.insertString(doc.getLength(), message.getUser().getName() + ": ", unameAset);
+				doc.insertString(doc.getLength(), message.getMessage() + "\n", attributeSet);
 			} catch (BadLocationException e) {
 				e.printStackTrace();
 			}
-		}
-		
-		// Make sure the scroll bar is set to the end of the text panel
-		chatPanes.get(message.getDestination()).setCaretPosition(doc.getLength());
-		
-		// If the message was added to a background tab
-		if (!message.getDestination().equals(getActiveTab())) {
-			tabPanel.setForegroundAt(tabPanel.indexOfComponent(scrollPanes.get(message.getDestination())), Color.red);
+
+			// Remove first line if the character limit has been reached
+			if (doc.getLength() > MAX_CHARS) {
+				Element firstLine = doc.getDefaultRootElement().getElement(0);
+				try {
+					doc.remove(firstLine.getStartOffset(), firstLine.getEndOffset());
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				}
+			}
+
+			// Make sure the scroll bar is set to the end of the text panel
+			chatPanes.get(destination).setCaretPosition(doc.getLength());
+
+			// If the message was added to a background tab
+			if (!destination.equals(getActiveTab())) {
+				tabPanel.setForegroundAt(tabPanel.indexOfComponent(scrollPanes.get(destination)), Color.red);
+			}
 		}
 	}
 	
@@ -191,37 +207,40 @@ public class MainGUI implements ActionListener, Observer {
 	 * @param destination The destination of the notification
 	 */
 	public void notify(String notification, String destination) {
-		// Get the styled document of the destination
-		StyledDocument doc = chatPanes.get(destination).getStyledDocument();
-		
-		// Create the attributesets for the timestamp and the notification
-		AttributeSet timeAset = getTextStyle(Color.gray, "Calibri", 12, false, false);
-		AttributeSet attributeSet = getTextStyle(Color.gray, "Calibri", 16, false, true);
-		
-		// Create a timestamp for the notification
-		SimpleDateFormat sdf = new SimpleDateFormat("[HH:mm]");
-		String time = sdf.format(new Date());
-		
-		// Insert the notification into the document
-		try {
-			if (useTimestamps) doc.insertString(doc.getLength(), time + " ", timeAset);
-			doc.insertString(doc.getLength(), notification + "\n", attributeSet);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-		}
-		
-		// Remove first line if the character limit has been reached
-		if (doc.getLength() > MAX_CHARS) {
-			Element firstLine = doc.getDefaultRootElement().getElement(0);
+		// If a chatpane for the destination exists
+		if (chatPanes.get(destination) != null) {
+			// Get the styled document of the destination
+			StyledDocument doc = chatPanes.get(destination).getStyledDocument();
+
+			// Create the attributesets for the timestamp and the notification
+			AttributeSet timeAset = getTextStyle(Color.gray, "Calibri", 12, false, false);
+			AttributeSet attributeSet = getTextStyle(Color.gray, "Calibri", 16, false, true);
+
+			// Create a timestamp for the notification
+			SimpleDateFormat sdf = new SimpleDateFormat("[HH:mm]");
+			String time = sdf.format(new Date());
+
+			// Insert the notification into the document
 			try {
-				doc.remove(firstLine.getStartOffset(), firstLine.getEndOffset());
+				if (useTimestamps) doc.insertString(doc.getLength(), time + " ", timeAset);
+				doc.insertString(doc.getLength(), notification + "\n", attributeSet);
 			} catch (BadLocationException e) {
 				e.printStackTrace();
 			}
+
+			// Remove first line if the character limit has been reached
+			if (doc.getLength() > MAX_CHARS) {
+				Element firstLine = doc.getDefaultRootElement().getElement(0);
+				try {
+					doc.remove(firstLine.getStartOffset(), firstLine.getEndOffset());
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				}
+			}
+
+			// Make sure the scroll bar is set to the end of the text panel
+			chatPanes.get(destination).setCaretPosition(doc.getLength());
 		}
-		
-		// Make sure the scroll bar is set to the end of the text panel
-		chatPanes.get(destination).setCaretPosition(doc.getLength());
 	}
 	
 	/**
@@ -250,7 +269,7 @@ public class MainGUI implements ActionListener, Observer {
 		// If the connect menu item was pressed
 		if (source.equals(miConnect)) {
 			if (client == null) {
-				notify("Connecting...", getActiveTab());
+				notify("Connecting...", Protocol.MAINCHAT);
 				
 				// Ask the user to enter a username
 				String username = (String) JOptionPane.showInputDialog(frame, "Enter your desired username:\n", "Username selection", JOptionPane.PLAIN_MESSAGE, null, null, "");
@@ -260,7 +279,7 @@ public class MainGUI implements ActionListener, Observer {
 				currentUser.setAddress(Protocol.SOURCE);
 				
 				// Create the client and add the GUI as an observer
-				client = new Client();
+				client = new Client("228.9.10.11", 4231);
 				client.addObserver(this);
 				
 				// Create a KeyListener for the textfield
@@ -274,7 +293,7 @@ public class MainGUI implements ActionListener, Observer {
 				Thread t = new Thread(client);
 				t.start();
 			} else {
-				notify("You are already connected.", getActiveTab());
+				notify("You are already connected.", Protocol.MAINCHAT);
 			}
 		}
 		
@@ -286,7 +305,7 @@ public class MainGUI implements ActionListener, Observer {
 				client.disconnect();
 				client = null;
 			} else {
-				notify("You are not connected.", getActiveTab());
+				notify("You are not connected.", Protocol.MAINCHAT);
 			}
 		}
 	}
@@ -301,7 +320,21 @@ public class MainGUI implements ActionListener, Observer {
 		
 		// If the argument is a String
 		if (arg.getClass().equals(String.class)) {
-			notify((String) arg, getActiveTab());
+			// Split the string on the first space
+			String[] command = ((String) arg).split("\\s+", 2);
+
+			// Check the command type
+			switch (command[0]) {
+				case Protocol.PRIVCHAT:
+					newTab(command[1]);
+					break;
+				case Protocol.NOTIFY:
+					notify(command[1], Protocol.MAINCHAT);
+					break;
+				default:
+					// TODO Unknown command
+					break;
+			}
 		}
 	}
 	
@@ -316,8 +349,7 @@ public class MainGUI implements ActionListener, Observer {
 		initialize();
 		
 		// Create the tab containing the main chat room
-		newTab("Chatroom");
-		newTab("Test tab");
+		newTab(Protocol.MAINCHAT);
 	}
 
 	/**

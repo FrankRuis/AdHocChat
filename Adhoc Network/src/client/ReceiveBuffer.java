@@ -2,6 +2,7 @@ package client;
 
 import dataobjects.ChatMessage;
 import dataobjects.Packet;
+import dataobjects.User;
 import utils.Protocol;
 
 import java.io.BufferedInputStream;
@@ -55,6 +56,12 @@ public class ReceiveBuffer extends Thread {
 		    ObjectInputStream objectStream = new ObjectInputStream(new BufferedInputStream(byteStream));
 		    
 		    ChatMessage message = (ChatMessage) objectStream.readObject();
+
+			// If the client does not know this user yet
+			if (client.getUser(message.getUser().getName()) == null) {
+				client.addUser(new User(message.getUser().getName(), message.getUser().getColor()));
+			}
+
 		    client.notifyGUI(message);
 		    
 		    byteStream.close();
@@ -78,6 +85,20 @@ public class ReceiveBuffer extends Thread {
 					if (packet.getDestination() == Protocol.BROADCAST || packet.getDestination() == Protocol.SOURCE) {
 						if (packet.isFlagSet(Packet.CHATMESSAGE)) {
 							receiveChatMessage(packet);
+						} else {
+							String[] command = new String(packet.getPayload()).trim().split("\\s+");
+
+							switch (command[0]) {
+								case Protocol.PRIVCHAT:
+									client.addDestination(command[1], true);
+									client.notifyGUI(command[0] + " " + command[1]);
+									break;
+								case Protocol.ALIVE:
+									client.addUser(new User(command[1], null));
+								default:
+									// TODO Unknown command
+									break;
+							}
 						}
 					}
 				}

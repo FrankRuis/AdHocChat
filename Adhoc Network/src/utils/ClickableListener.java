@@ -2,12 +2,11 @@ package utils;
 
 import gui.MainGUI;
 
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-
-import javax.swing.JTextPane;
+import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Element;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 /**
  * Mouse listener that checks if a clicked element in a JTextPane has the clickable attribute
@@ -40,8 +39,12 @@ public class ClickableListener implements MouseListener {
 		
 		// Check the element contained the clickable attribute
 		if (value != null) {
-			System.out.println("Clicked an element with value: " + value);
-			gui.newTab(value);
+			// TODO start a private chat
+			// If a username other than the current user is clicked
+			if (!value.equals(gui.getCurrentUser().getName())) {
+				// Add a tab with the clicked username as the title
+				gui.startPrivateChat(value);
+			}
 		}
 	}
 

@@ -1,20 +1,19 @@
 package client;
 
+import dataobjects.ChatMessage;
+import dataobjects.User;
+import utils.Protocol;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-
-import dataobjects.ChatMessage;
-import dataobjects.User;
+import java.util.*;
 
 public class Client extends Observable implements Runnable {
 	
-	private String address = "228.9.10.11";
+	private String address;
 	private InetAddress group;
-	private int port = 4231;
+	private int port;
 	
 	private MulticastSocket socket;
 	private boolean connected = false;
@@ -23,12 +22,18 @@ public class Client extends Observable implements Runnable {
 	private ReceiveBuffer receiveBuffer;
 	
 	private Map<String, User> connectedUsers;
+	private Map<String, Set<Integer>> destinations;
 	
 	/**
 	 * Constructor
 	 */
-	public Client() {
+	public Client(String address, int port) {
+		this.address = address;
+		this.port = port;
 		connectedUsers = new HashMap<>();
+		destinations = new HashMap<>();
+		destinations.put(Protocol.MAINCHAT, new HashSet<Integer>());
+		destinations.get(Protocol.MAINCHAT).add(Protocol.BROADCAST);
 	}
 	
 	/**
@@ -36,6 +41,7 @@ public class Client extends Observable implements Runnable {
 	 */
 	public void connect() {
 		try {
+			// Create a multicast socket and join a multicast group
 			socket = new MulticastSocket(port);
 			group = InetAddress.getByName(address);
 			socket.joinGroup(group);
@@ -48,11 +54,11 @@ public class Client extends Observable implements Runnable {
 			
 			// Start the while loop
 			connected = true;
-			
-			notifyGUI("Connected.");
+
+			notifyGUI(Protocol.NOTIFY  + " Connected.");
 		} catch (IOException e) {
 			e.printStackTrace();
-			notifyGUI("A problem occurred while connecting.");
+			notifyGUI(Protocol.NOTIFY + " A problem occurred while connecting.");
 		}
 	}
 	
@@ -70,7 +76,7 @@ public class Client extends Observable implements Runnable {
 			socket.leaveGroup(group);
 			socket.close();
 			
-			notifyGUI("Disconnected.");
+			notifyGUI(Protocol.NOTIFY  + " Disconnected.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -81,7 +87,12 @@ public class Client extends Observable implements Runnable {
 	 * @param user
 	 */
 	public void addUser(User user) {
-		connectedUsers.put(user.getName(), user);
+		// If the username does not yet exist
+		if (!connectedUsers.containsKey(user.getName())) {
+			connectedUsers.put(user.getName(), user);
+		} else {
+			// TODO Username exists
+		}
 	}
 	
 	/**
@@ -91,13 +102,48 @@ public class Client extends Observable implements Runnable {
 	public void removeUser(String name) {
 		connectedUsers.remove(name);
 	}
-	
+
+	/**
+	 * Get the user with the given name
+	 * @param name The name of the user to get
+	 * @return The user object
+	 */
+	public User getUser(String name) {
+		return connectedUsers.get(name);
+	}
+
 	/**
 	 * Send a ChatMessage object
 	 * @param message
 	 */
 	public void sendChatMessage(ChatMessage message) {
-		sendBuffer.sendChatMessage(message);
+		for (int address : destinations.get(message.getDestination())) {
+			sendBuffer.sendChatMessage(message, address);
+		}
+	}
+
+	/**
+	 * Add a new destination
+	 * @param name
+	 * @param privateChat
+	 */
+	public void addDestination(String name, boolean privateChat) {
+		destinations.put(name, new HashSet<Integer>());
+
+		if (privateChat) {
+			destinations.get(name).add(connectedUsers.get(name).getAddress());
+		}
+	}
+
+	/**
+	 * Send a message
+	 * @param message
+	 * @param destination
+	 */
+	public void sendMessage(String message, String destination) {
+		for (int address : destinations.get(destination)) {
+			sendBuffer.sendMessage(message, address);
+		}
 	}
 	
 	/**
@@ -112,9 +158,5 @@ public class Client extends Observable implements Runnable {
 	@Override
 	public void run() {
 		connect();
-
-		while (connected) {
-			
-		}
 	}
 }
