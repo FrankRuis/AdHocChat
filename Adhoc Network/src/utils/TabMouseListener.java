@@ -1,6 +1,7 @@
 package utils;
 
-import javax.swing.*;
+import gui.MainGUI;
+
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -12,10 +13,10 @@ import java.awt.event.MouseListener;
  */
 public class TabMouseListener implements MouseListener {
 
-    JTabbedPane pane;
+    MainGUI gui;
 
-    public TabMouseListener(JTabbedPane pane) {
-        this.pane = pane;
+    public TabMouseListener(MainGUI gui) {
+        this.gui = gui;
     }
 
     /**
@@ -26,23 +27,26 @@ public class TabMouseListener implements MouseListener {
      */
     @Override
     public void mouseClicked(MouseEvent e) {
-        int tab = pane.getUI().tabForCoordinate(pane, e.getX(), e.getY());
+        int tab = gui.getTabPane().getUI().tabForCoordinate(gui.getTabPane(), e.getX(), e.getY());
 
-        // If the right mouse button was pressed
-        if(e.getButton() == MouseEvent.BUTTON3){
-            // Don't allow the main tab to be removed
-            if (!pane.getTitleAt(tab).equals("Chatroom")) {
-                // Remove the tab
-                pane.removeTabAt(tab);
+        // If the tab exists
+        if (tab >= 0) {
+            // If the right mouse button was pressed
+            if (e.getButton() == MouseEvent.BUTTON3) {
+                // Don't allow the main tab to be removed
+                if (!gui.getTabPane().getTitleAt(tab).equals("Chatroom")) {
+                    // Remove the tab
+                    gui.removeTab(tab);
+                } else {
+                    // Set the foreground color to black
+                    gui.getTabPane().setForegroundAt(tab, Color.black);
+                }
+
+                // If a different mouse button was pressed
             } else {
                 // Set the foreground color to black
-                pane.setForegroundAt(tab, Color.black);
+                gui.getTabPane().setForegroundAt(tab, Color.black);
             }
-
-        // If a different mouse button was pressed
-        } else {
-            // Set the foreground color to black
-            pane.setForegroundAt(tab, Color.black);
         }
     }
 
