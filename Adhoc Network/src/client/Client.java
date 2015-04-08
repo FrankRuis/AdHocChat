@@ -177,10 +177,11 @@ public class Client extends Observable implements Runnable {
 		connect();
 
 		while (connected){
-			removeInactiveUsers();
-
 			// Check if we should send an 'alive' broadcast
 			if (System.currentTimeMillis() - lastAliveBroadcast > Protocol.ALIVE_RATE) {
+				// Remove inactive users
+				removeInactiveUsers();
+
 				// Send an 'alive' broadcast to let others know we're here
 				sendBuffer.sendMessage(Protocol.ALIVE + " " + connectedUsers.get(Protocol.SOURCE).getName(), Protocol.BROADCAST);
 				lastAliveBroadcast = System.currentTimeMillis();
