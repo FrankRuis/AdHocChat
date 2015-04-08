@@ -57,11 +57,10 @@ public class ReceiveBuffer extends Thread {
 		    
 		    ChatMessage message = (ChatMessage) objectStream.readObject();
 
-			// If the client does not know this user yet
-			if (client.getUser(message.getUser().getName()) == null) {
-				client.addUser(new User(message.getUser().getName(), message.getUser().getColor()));
-			}
+			// Add or update the user
+			client.addUser(message.getUser());
 
+			// Notify the GUI of the received chat message
 		    client.notifyGUI(message);
 		    
 		    byteStream.close();
@@ -90,7 +89,7 @@ public class ReceiveBuffer extends Thread {
 
 							switch (command[0]) {
 								case Protocol.PRIVCHAT:
-									client.addDestination(command[1], true);
+									client.addDestination(command[1], packet.getSource());
 									client.notifyGUI(command[0] + " " + command[1]);
 									break;
 								case Protocol.ALIVE:

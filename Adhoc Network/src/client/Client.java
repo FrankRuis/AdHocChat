@@ -21,7 +21,7 @@ public class Client extends Observable implements Runnable {
 	private SendBuffer sendBuffer;
 	private ReceiveBuffer receiveBuffer;
 	
-	private Map<String, User> connectedUsers;
+	private Map<Integer, User> connectedUsers;
 	private Map<String, Set<Integer>> destinations;
 	
 	/**
@@ -87,29 +87,24 @@ public class Client extends Observable implements Runnable {
 	 * @param user
 	 */
 	public void addUser(User user) {
-		// If the username does not yet exist
-		if (!connectedUsers.containsKey(user.getName())) {
-			connectedUsers.put(user.getName(), user);
-		} else {
-			// TODO Username exists
-		}
+		connectedUsers.put(user.getAddress(), user);
 	}
 	
 	/**
 	 * Remove a user from the list of connected users
-	 * @param name
+	 * @param address
 	 */
-	public void removeUser(String name) {
-		connectedUsers.remove(name);
+	public void removeUser(int address) {
+		connectedUsers.remove(address);
 	}
 
 	/**
 	 * Get the user with the given name
-	 * @param name The name of the user to get
+	 * @param address The address of the user to get
 	 * @return The user object
 	 */
-	public User getUser(String name) {
-		return connectedUsers.get(name);
+	public User getUser(int address) {
+		return connectedUsers.get(address);
 	}
 
 	/**
@@ -125,13 +120,13 @@ public class Client extends Observable implements Runnable {
 	/**
 	 * Add a new destination
 	 * @param name
-	 * @param privateChat
+	 * @param addresses
 	 */
-	public void addDestination(String name, boolean privateChat) {
+	public void addDestination(String name, int... addresses) {
 		destinations.put(name, new HashSet<Integer>());
 
-		if (privateChat) {
-			destinations.get(name).add(connectedUsers.get(name).getAddress());
+		for (int address : addresses) {
+			destinations.get(name).add(address);
 		}
 	}
 

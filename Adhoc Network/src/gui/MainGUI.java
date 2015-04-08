@@ -61,12 +61,18 @@ public class MainGUI implements ActionListener, Observer {
 
 	/**
 	 * Start a private chat with the given user
-	 * @param name The name of the user
+	 * @param address The address of the user
 	 */
-	public void startPrivateChat(String name) {
-		newTab(name);
-		client.addDestination(name, true);
-		client.sendMessage(Protocol.PRIVCHAT + " " + currentUser.getName(), name);
+	public void startPrivateChat(int address) {
+		User user = client.getUser(address);
+
+		if (user != null) {
+			newTab(user.getName());
+			client.addDestination(user.getName(), address);
+			client.sendMessage(Protocol.PRIVCHAT + " " + currentUser.getName(), user.getName());
+		} else {
+			// TODO User not in known users list
+		}
 	}
 
 	/**
@@ -160,7 +166,7 @@ public class MainGUI implements ActionListener, Observer {
 
 			// Create the attribute set for the username and make the username clickable
 			AttributeSet unameAset = getTextStyle(message.getUser().getColor(), "Tahoma", 12, true, false);
-			unameAset = makeClickable(unameAset, message.getUser().getName());
+			unameAset = makeClickable(unameAset, "" + message.getUser().getAddress());
 
 			// Create an attribute set with the parameters given by the ChatMessage object
 			AttributeSet attributeSet = getTextStyle(message.getColor(), message.getFont(), message.getFontSize(), message.isBold(), message.isItalic());

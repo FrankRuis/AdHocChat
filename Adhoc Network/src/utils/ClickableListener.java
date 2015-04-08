@@ -35,14 +35,13 @@ public class ClickableListener implements MouseListener {
 		
 		// Get the attribute set of the clicked element
 		AttributeSet attributeSet = element.getAttributes();
-		String value = (String) attributeSet.getAttribute(tag);
-		
+		int value = attributeSet.getAttribute(tag) != null ? Integer.parseInt((String) attributeSet.getAttribute(tag)) : -1;
+
 		// Check the element contained the clickable attribute
-		if (value != null) {
-			// TODO start a private chat
-			// If a username other than the current user is clicked
-			if (!value.equals(gui.getCurrentUser().getName())) {
-				// Add a tab with the clicked username as the title
+		if (value > 0) {
+			// If the value is not equal to our address
+			if (value != Protocol.SOURCE) {
+				// Add a tab for a private chat with the clicked user
 				gui.startPrivateChat(value);
 			}
 		}
