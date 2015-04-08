@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Client extends Observable implements Runnable {
 	
@@ -23,6 +24,8 @@ public class Client extends Observable implements Runnable {
 	
 	private Map<Integer, User> connectedUsers;
 	private Map<String, Set<Integer>> destinations;
+
+	private long lastAliveBroadcast;
 	
 	/**
 	 * Constructor
@@ -30,10 +33,14 @@ public class Client extends Observable implements Runnable {
 	public Client(String address, int port) {
 		this.address = address;
 		this.port = port;
-		connectedUsers = new HashMap<>();
+
+		connectedUsers = new ConcurrentHashMap<>();
 		destinations = new HashMap<>();
+
 		destinations.put(Protocol.MAINCHAT, new HashSet<Integer>());
 		destinations.get(Protocol.MAINCHAT).add(Protocol.BROADCAST);
+
+		lastAliveBroadcast = 0;
 	}
 	
 	/**
@@ -51,7 +58,7 @@ public class Client extends Observable implements Runnable {
 			receiveBuffer = new ReceiveBuffer(20, socket, this);
 			sendBuffer.start();
 			receiveBuffer.start();
-			
+
 			// Start the while loop
 			connected = true;
 
@@ -96,6 +103,21 @@ public class Client extends Observable implements Runnable {
 	 */
 	public void removeUser(int address) {
 		connectedUsers.remove(address);
+	}
+
+
+	/**
+	 * Remove users that have not been seen for a while
+	 */
+	public void removeInactiveUsers() {
+		for (User user : connectedUsers.values()) {
+			// If the last seen timestamp was set more milliseconds ago than the inactivity limit allows
+			if (user.getAddress() != Protocol.SOURCE && (System.currentTimeMillis() - user.getLastSeen().getTime()) > Protocol.INACTIVITY_LIMIT) {
+				// Remove the user
+				this.removeUser(user.getAddress());
+				notifyGUI(Protocol.PART + " " + user.getName());
+			}
+		}
 	}
 
 	/**
@@ -153,5 +175,16 @@ public class Client extends Observable implements Runnable {
 	@Override
 	public void run() {
 		connect();
+
+		while (connected){
+			removeInactiveUsers();
+
+			// Check if we should send an 'alive' broadcast
+			if (System.currentTimeMillis() - lastAliveBroadcast > Protocol.ALIVE_RATE) {
+				// Send an 'alive' broadcast to let others know we're here
+				sendBuffer.sendMessage(Protocol.ALIVE + " " + connectedUsers.get(Protocol.SOURCE).getName(), Protocol.BROADCAST);
+				lastAliveBroadcast = System.currentTimeMillis();
+			}
+		}
 	}
 }

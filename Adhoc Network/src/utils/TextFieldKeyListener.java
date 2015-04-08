@@ -1,16 +1,14 @@
 package utils;
 
+import client.Client;
+import dataobjects.ChatMessage;
 import gui.MainGUI;
 
-import java.awt.Color;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.LinkedList;
-
-import javax.swing.JTextField;
-
-import client.Client;
-import dataobjects.ChatMessage;
 
 /**
  * Custom key adapter for the chat GUI
@@ -74,7 +72,6 @@ public class TextFieldKeyListener extends KeyAdapter {
 			ChatMessage chatMessage = new ChatMessage(gui.getCurrentUser(), Color.black, 16, "Calibri", false, false, message, gui.getActiveTab());
 			gui.append(chatMessage);
 			client.sendChatMessage(chatMessage);
-			
 			source.setText("");
 			historyPos = 0;
 		}

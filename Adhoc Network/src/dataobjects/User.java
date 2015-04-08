@@ -1,7 +1,8 @@
 package dataobjects;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Random;
 
 /**
@@ -17,12 +18,15 @@ public class User implements Serializable {
 	private Color color;
 	
 	private int address;
+
+	private Timestamp lastSeen;
 	
 	/**
 	 * Constructor with default values
 	 */
 	public User() {
 		this.name = "Anonymous";
+		this.lastSeen = new Timestamp(System.currentTimeMillis());
 		
 		// Choose a random color for the user name
 		Random random = new Random();
@@ -38,6 +42,8 @@ public class User implements Serializable {
 	 * @param color The color for the username, random color is chosen if null
 	 */
 	public User(String name, Color color) {
+		this.lastSeen = new Timestamp(System.currentTimeMillis());
+
 		if (name != null && !name.trim().equals("")) {
 			this.name = name;
 		} else {
@@ -51,6 +57,21 @@ public class User implements Serializable {
 		float brightness = 0.85f;
 		
 		this.color = color != null ? color : Color.getHSBColor(hue, saturation, brightness);
+	}
+
+	/**
+	 * Set the last seen timestamp to the current time
+	 */
+	public void setLastSeen() {
+		this.lastSeen = new Timestamp(System.currentTimeMillis());
+	}
+
+	/**
+	 * Get the last seen timestamp
+	 * @return The timestamp
+	 */
+	public Timestamp getLastSeen() {
+		return this.lastSeen;
 	}
 
 	/**

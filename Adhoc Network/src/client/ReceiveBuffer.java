@@ -58,6 +58,7 @@ public class ReceiveBuffer extends Thread {
 		    ChatMessage message = (ChatMessage) objectStream.readObject();
 
 			// Add or update the user
+			message.getUser().setLastSeen();
 			client.addUser(message.getUser());
 
 			// Notify the GUI of the received chat message
@@ -82,24 +83,40 @@ public class ReceiveBuffer extends Thread {
 				if (packet.getSource() != Protocol.SOURCE) {
 					// If we are the destination
 					if (packet.getDestination() == Protocol.BROADCAST || packet.getDestination() == Protocol.SOURCE) {
+						// If the payload is a ChatMessage object
 						if (packet.isFlagSet(Packet.CHATMESSAGE)) {
 							receiveChatMessage(packet);
+
+						// The payload is a command
 						} else {
+							// Split the command on whitespaces
 							String[] command = new String(packet.getPayload()).trim().split("\\s+");
 
+							// Check the command type
 							switch (command[0]) {
+								// Start a private chat
 								case Protocol.PRIVCHAT:
 									client.addDestination(command[1], packet.getSource());
 									client.notifyGUI(command[0] + " " + command[1]);
 									break;
+								// Refresh the user's 'alive' status
 								case Protocol.ALIVE:
+									User user = client.getUser(packet.getSource());
+
 									// If we haven't seen this user before
-									if (client.getUser(packet.getSource()) == null) {
+									if (user == null) {
 										// Create a new user and add it to the list of connected users
 										User newUser = new User(command[1], null);
 										newUser.setAddress(packet.getSource());
 										client.addUser(newUser);
+
+										client.notifyGUI(Protocol.NOTIFY + " User " + newUser.getName() + " has entered the chat." );
+									} else {
+										// Update the user's last seen timestamp
+										user.setLastSeen();
 									}
+									break;
+								// Command not known
 								default:
 									System.err.println("Received an unknown command.");
 									break;

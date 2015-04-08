@@ -344,6 +344,9 @@ public class MainGUI implements ActionListener, Observer {
 				case Protocol.NOTIFY:
 					notify(command[1], Protocol.MAINCHAT);
 					break;
+				case Protocol.PART:
+					notify("User " + command[1] + " has left the chat.", Protocol.MAINCHAT);
+					break;
 				default:
 					// TODO Unknown command
 					break;
