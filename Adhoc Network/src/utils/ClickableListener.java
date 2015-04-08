@@ -1,6 +1,7 @@
 package utils;
 
 import gui.MainGUI;
+import gui.UserDialogWindow;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
@@ -18,6 +19,7 @@ public class ClickableListener implements MouseListener {
 	private JTextPane textPane;
 	private MainGUI gui;
 	private String tag = "clickable";
+	private UserDialogWindow userDialogWindow;
 
 	/**
 	 * Constructor
@@ -41,8 +43,13 @@ public class ClickableListener implements MouseListener {
 		if (value > 0) {
 			// If the value is not equal to our address
 			if (value != Protocol.SOURCE) {
-				// Add a tab for a private chat with the clicked user
-				gui.startPrivateChat(value);
+				// If a window is already open, dispose it
+				if (userDialogWindow != null) {
+					userDialogWindow.dispose();
+				}
+
+				// Open a new user dialog window
+				userDialogWindow = new UserDialogWindow(gui, gui.getUser(value));
 			}
 		}
 	}

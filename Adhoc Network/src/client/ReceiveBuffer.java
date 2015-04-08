@@ -93,9 +93,15 @@ public class ReceiveBuffer extends Thread {
 									client.notifyGUI(command[0] + " " + command[1]);
 									break;
 								case Protocol.ALIVE:
-									client.addUser(new User(command[1], null));
+									// If we haven't seen this user before
+									if (client.getUser(packet.getSource()) == null) {
+										// Create a new user and add it to the list of connected users
+										User newUser = new User(command[1], null);
+										newUser.setAddress(packet.getSource());
+										client.addUser(newUser);
+									}
 								default:
-									// TODO Unknown command
+									System.err.println("Received an unknown command.");
 									break;
 							}
 						}

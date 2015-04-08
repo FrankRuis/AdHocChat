@@ -61,14 +61,12 @@ public class MainGUI implements ActionListener, Observer {
 
 	/**
 	 * Start a private chat with the given user
-	 * @param address The address of the user
+	 * @param user The user to start a private chat with
 	 */
-	public void startPrivateChat(int address) {
-		User user = client.getUser(address);
-
+	public void startPrivateChat(User user) {
 		if (user != null) {
 			newTab(user.getName());
-			client.addDestination(user.getName(), address);
+			client.addDestination(user.getName(), user.getAddress());
 			client.sendMessage(Protocol.PRIVCHAT + " " + currentUser.getName(), user.getName());
 		} else {
 			// TODO User not in known users list
@@ -262,7 +260,16 @@ public class MainGUI implements ActionListener, Observer {
 	public User getCurrentUser() {
 		return currentUser;
 	}
-	
+
+	/**
+	 * Get the user with the given address
+	 * @param address The address of the user to get
+	 * @return The user object
+	 */
+	public User getUser(int address) {
+		return client.getUser(address);
+	}
+
 	/**
 	 * Called when a menu item is pressed
 	 * @param e The action event
