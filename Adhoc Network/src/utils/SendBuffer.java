@@ -2,11 +2,11 @@ package utils;
 
 import dataobjects.Packet;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Send window for ensuring reliable data delivery
+ * Send buffer for ensuring reliable data delivery
  *
  * @author Frank
  */
@@ -23,7 +23,7 @@ public class SendBuffer {
      */
     public SendBuffer(int windowSize) {
         WINDOW_SIZE = windowSize;
-        buffer = new LinkedHashMap<>();
+        buffer = new ConcurrentHashMap<>();
         seq = 0;
     }
 
