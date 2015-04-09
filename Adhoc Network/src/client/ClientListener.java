@@ -92,57 +92,73 @@ public class ClientListener extends Thread {
 				socket.receive(datagramPacket);
 				Packet packet = new Packet(datagramPacket);
 
-				// If the packet was not sent by us
-				if (packet.getSource() != Protocol.SOURCE) {
-					// If we are the destination
-					if (packet.getDestination() == Protocol.BROADCAST || packet.getDestination() == Protocol.SOURCE) {
-						// If the payload is a ChatMessage object
-						if (packet.isFlagSet(Packet.CHATMESSAGE)) {
-							receiveChatMessage(packet);
+				// Check the checksum
+				if (packet.getChecksum() == packet.calculateChecksum()) {
+					// If the packet was not sent by us
+					if (packet.getSource() != Protocol.SOURCE) {
+						// If we are the destination
+						if (packet.getDestination() == Protocol.BROADCAST || packet.getDestination() == Protocol.SOURCE) {
+							// If it is an acknowledgement
+							if (packet.isFlagSet(Packet.ACK)) {
+								// Handle the acknowledgement
+								client.acknowledge(packet.getSource(), packet.getAck());
+
+							// If the payload is a ChatMessage object
+							} else if (packet.isFlagSet(Packet.CHATMESSAGE)) {
+								// Parse the ChatMessage object
+								receiveChatMessage(packet);
+
+								// Acknowledge the received packet
+								client.sendAck(packet.getSource(), packet.getSeq() + 1);
 
 							// The payload is a command
-						} else {
-							// Split the command on whitespaces
-							String[] command = new String(packet.getPayload()).trim().split("\\s+");
+							} else {
+								// Split the command on whitespaces
+								String[] command = new String(packet.getPayload()).trim().split("\\s+");
 
-							// Check the command type
-							switch (command[0]) {
-								// Start a private chat
-								case Protocol.PRIVCHAT:
-									client.addDestination(command[1], packet.getSource());
-									client.notifyGUI(command[0] + " " + command[1]);
-									break;
-								// Refresh the user's 'alive' status
-								case Protocol.ALIVE:
-									User user = client.getUser(packet.getSource());
+								// Check the command type
+								switch (command[0]) {
+									// Start a private chat
+									case Protocol.PRIVCHAT:
+										client.addDestination(command[1], packet.getSource());
+										client.notifyGUI(command[0] + " " + command[1]);
+										break;
+									// Refresh the user's 'alive' status
+									case Protocol.ALIVE:
+										User user = client.getUser(packet.getSource());
 
-									// If we haven't seen this user before
-									if (user == null) {
-										// Create a new user and add it to the list of connected users
-										User newUser = new User(command[1], null);
-										newUser.setAddress(packet.getSource());
-										client.addUser(newUser);
+										// If we haven't seen this user before
+										if (user == null) {
+											// Create a new user and add it to the list of connected users
+											User newUser = new User(command[1], null);
+											newUser.setAddress(packet.getSource());
+											client.addUser(newUser);
 
-										client.notifyGUI(Protocol.NOTIFY + " User " + newUser.getName() + " has entered the chat.");
-									} else {
-										// Update the user's last seen timestamp
-										user.setLastSeen();
-									}
+											client.notifyGUI(Protocol.NOTIFY + " User " + newUser.getName() + " has entered the chat.");
+										} else {
+											// Update the user's last seen timestamp
+											user.setLastSeen();
+										}
 
-									// Forward the alive broadcast
-									client.forwardPacket(packet);
-									break;
-								// Command not known
-								default:
-									System.err.println("Received an unknown command.");
-									break;
+										// Forward the alive broadcast
+										client.forwardPacket(packet);
+										break;
+									// Command not known
+									default:
+										System.err.println("Received an unknown command.");
+										break;
+								}
 							}
+
+						// The packet was not meant for us
+						} else {
+							// Forward the packet
+							client.forwardPacket(packet);
 						}
-					// The packet was not meant for us
-					} else {
-						// Forward the packet
-						client.forwardPacket(packet);
 					}
+				} else {
+					// TODO Wrong checksum
+					System.err.println("Wrong checksum.");
 				}
 			} catch (IOException e) {
 				e.printStackTrace();

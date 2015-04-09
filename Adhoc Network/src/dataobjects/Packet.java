@@ -12,7 +12,7 @@ import java.util.Arrays;
 public class Packet {
 
 	public static final int SIZE = 1024;
-	public static final int HEADER_SIZE = 22;
+	public static final int HEADER_SIZE = 26;
 	
 	/* Flags */
 	public static final int ACK = 1;
@@ -25,8 +25,9 @@ public class Packet {
 	private final int ACK_POS = 12; // Acknowledgement number
 	private final int FLG_POS = 16; // Flags
 	private final int HOP_POS = 18; // Hop count
-	private final int CSM_POS = 20; // Checksum
-	private final int PLD_POS = 22; // Payload
+	private final int LEN_POS = 20; // Length
+	private final int CSM_POS = 24; // Checksum
+	private final int PLD_POS = 26; // Payload
 	
 	private ByteBuffer buffer;
 	
@@ -135,7 +136,7 @@ public class Packet {
 	 * 1. ACK <br>
 	 * 2. ChatMessage <br>
 	 * 
-	 * @param flags
+	 * @param flg
 	 */
 	public void setFlags(boolean... flg) {
 		// If any of the flags are set
@@ -207,7 +208,21 @@ public class Packet {
 	public void decreaseHops() {
 		buffer.putShort(HOP_POS, (short) (buffer.getShort(HOP_POS) - 1));
 	}
-	
+
+	/**
+	 * Set the packet length
+	 */
+	public void setLength() {
+		buffer.putInt(LEN_POS, buffer.capacity());
+	}
+
+	/**
+	 * @return The packet length in size
+	 */
+	public int getLength() {
+		return buffer.getInt(LEN_POS);
+	}
+
 	/**
 	 * Set the checksum
 	 * @param checksum
@@ -234,7 +249,7 @@ public class Packet {
 	 * @return The payload
 	 */
 	public byte[] getPayload() {
-		return Arrays.copyOfRange(buffer.array(), PLD_POS, buffer.capacity());
+		return Arrays.copyOfRange(buffer.array(), PLD_POS, getLength());
 	}
 	
 	/**
@@ -253,7 +268,7 @@ public class Packet {
 		short checksum = 0;
 		
 		// Add the 16 bit words to the checksum value
-		for (int n = 0; n < buffer.capacity(); n += 2) {
+		for (int n = 0; n < getLength() - 1; n += 2) {
 			// Don't add the checksum itself
 			if (n != CSM_POS) {
 				// Get the nth short and add it to the checksum
@@ -279,12 +294,5 @@ public class Packet {
 	 */
 	public byte[] getData() {
 		return buffer.array();
-	}
-	
-	/**
-	 * @return The length of the packet in bytes
-	 */
-	public int length() {
-		return buffer.capacity();
 	}
 }

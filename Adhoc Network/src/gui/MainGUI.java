@@ -20,9 +20,8 @@ import java.util.*;
  * @author Frank
  */
 public class MainGUI implements ActionListener, Observer {
-	
-	// Maximum amount of characters to display in a single JTextPane
-	private final int MAX_CHARS = 5000;
+
+	private final int MAX_CHARS = 5000; // Maximum amount of characters to display in a single JTextPane
 	
 	private JFrame frame;
 

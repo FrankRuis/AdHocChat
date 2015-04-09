@@ -31,7 +31,9 @@ public class ClientSender extends Thread {
 	private boolean connected = false;
 	private InetAddress group;
 	private int port;
-	
+
+	private long lastRetransmit;
+
 	/**
 	 * Constructor
 	 * @param windowSize
@@ -46,6 +48,7 @@ public class ClientSender extends Thread {
 		WINDOW_SIZE = windowSize;
 		connected = true;
 		openConnections = new HashMap<>();
+		lastRetransmit = System.currentTimeMillis();
 	}
 	
 	/**
@@ -57,10 +60,56 @@ public class ClientSender extends Thread {
 
 	/**
 	 * Open a connection with the given destination
-	 * @param destination
+	 * @param destination The destination of the connection
 	 */
 	public void openConnection(int destination) {
-		this.openConnections.put(destination, new SendBuffer(WINDOW_SIZE));
+		openConnections.put(destination, new SendBuffer(WINDOW_SIZE));
+	}
+
+	/**
+	 * Close the connection with the given destination
+	 * @param destination The destination of the connection
+	 */
+	public void closeConnection(int destination) {
+		// Check if the connection exists
+		if (openConnections.containsKey(destination)) {
+			openConnections.remove(destination);
+		}
+	}
+
+	/**
+	 * Acknowledge the given acknowledgement number
+	 * @param ack The acknowledgement number to acknowledge
+	 * @param source  The source
+	 */
+	public void acknowledge(int source, int ack) {
+		// If the connection is still open
+		if (openConnections.containsKey(source)) {
+			// Acknowledge the packet
+			openConnections.get(source).ackPacket(ack);
+		}
+	}
+
+	/**
+	 * Send an acknowledgement to the given destination
+	 * @param destination
+	 * @param ack
+	 */
+	public void sendAck(int destination, int ack) {
+		try {
+			Packet packet = new Packet(Packet.HEADER_SIZE);
+			packet.setSource(Protocol.SOURCE);
+			packet.setDestination(destination);
+			packet.setAck(ack);
+			packet.setHops(Protocol.MAXHOPS);
+			packet.setFlags(true);
+			packet.setLength();
+			packet.setChecksum();
+
+			socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -71,29 +120,46 @@ public class ClientSender extends Thread {
 	public void sendChatMessage(ChatMessage message, int destination) {
 		if (connected) {
 			try {
-				// Open ByteArray and Object output streams
-				ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-				ObjectOutputStream objectStream = new ObjectOutputStream(new BufferedOutputStream(byteStream));
+				// Check if a connection to the destination is open
+				if (openConnections.containsKey(destination)) {
+					SendBuffer sendBuffer = openConnections.get(destination);
 
-				// Write the ChatMessage object to the object output stream
-				objectStream.writeObject(message);
-				objectStream.flush();
+					// Open ByteArray and Object output streams
+					ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+					ObjectOutputStream objectStream = new ObjectOutputStream(new BufferedOutputStream(byteStream));
 
-				// Put the resulting byte array in a packet and set the appropriate flags
-				byte[] sendBuffer = byteStream.toByteArray();
-				Packet packet = new Packet(sendBuffer.length + Packet.HEADER_SIZE);
-				packet.setSource(Protocol.SOURCE);
-				packet.setDestination(destination);
-				packet.setHops(Protocol.MAXHOPS);
-				packet.setFlags(false, true);
-				packet.setPayload(sendBuffer);
+					// Write the ChatMessage object to the object output stream
+					objectStream.writeObject(message);
+					objectStream.flush();
 
-				// Close the output streams
-				byteStream.close();
-				objectStream.close();
+					// Put the resulting byte array in a packet and set the appropriate flags
+					byte[] buffer = byteStream.toByteArray();
+					Packet packet = new Packet(buffer.length + Packet.HEADER_SIZE);
+					packet.setSource(Protocol.SOURCE);
+					packet.setDestination(destination);
+					packet.setHops(Protocol.MAXHOPS);
+					packet.setSeq(sendBuffer.getSeq());
+					packet.setFlags(false, true);
+					packet.setPayload(buffer);
+					packet.setLength();
+					packet.setChecksum();
 
-				// Send the packet
-				socket.send(new DatagramPacket(packet.getData(), packet.length(), group, port));
+					// Close the output streams
+					byteStream.close();
+					objectStream.close();
+
+					// If we can send a packet, send it and add it to the buffer
+					if (sendBuffer.canSend()) {
+						socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
+						sendBuffer.addPacket(packet);
+					} else {
+						// TODO Buffer full
+						System.out.println("Send buffer full.");
+					}
+				} else {
+					// TODO Trying to send to an unopened connection
+					System.out.println("Trying to send to an unopened connection");
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -111,7 +177,8 @@ public class ClientSender extends Thread {
 
 			// Only forward if the amount of hops is higher than zero
 			if (packet.getHops() > 0) {
-				socket.send(new DatagramPacket(packet.getData(), packet.length(), group, port));
+				packet.setChecksum();
+				socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -133,8 +200,10 @@ public class ClientSender extends Thread {
 				packet.setHops(Protocol.MAXHOPS);
 				packet.setFlags(false, false);
 				packet.setPayload(sendBuffer);
+				packet.setLength();
+				packet.setChecksum();
 
-				socket.send(new DatagramPacket(packet.getData(), packet.length(), group, port));
+				socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -144,7 +213,23 @@ public class ClientSender extends Thread {
 	@Override
 	public void run() {
 		while (connected) {
+			// Check if we are due for a retransmission
+			if (System.currentTimeMillis() - lastRetransmit > Protocol.TIMEOUT) {
+				// Go through all open connections
+				for (SendBuffer buffer : openConnections.values()) {
+					// Retransmit each unacked packet left in the buffer
+					for (Packet packet : buffer.getUnackedPackets().values()) {
+						try {
+							socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
 
+				// Update the last retransmit time
+				lastRetransmit = System.currentTimeMillis();
+			}
 		}
 	}
 }

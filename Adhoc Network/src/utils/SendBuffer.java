@@ -34,14 +34,11 @@ public class SendBuffer {
     public void addPacket(Packet packet) {
         // If the buffer still has space
         if (buffer.size() < WINDOW_SIZE) {
-            // Set the packet's sequence number
-            packet.setSeq(seq);
-
             // Add the packet to the buffer
             buffer.put(seq, packet);
 
             // Increment the sequence number
-            seq += packet.length();
+            seq += packet.getLength();
 
             // Make sure seq does not become negative
             if (seq < 0) {
@@ -51,6 +48,21 @@ public class SendBuffer {
             //TODO Send window exceeded
             System.out.println("Send window exceeded");
         }
+    }
+
+    /**
+     * Get the unacked packets
+     * @return A map containing the unacked packets
+     */
+    public Map<Integer, Packet> getUnackedPackets() {
+        return buffer;
+    }
+
+    /**
+     * @return The current sequence number
+     */
+    public int getSeq() {
+        return seq;
     }
 
     /**
@@ -64,5 +76,12 @@ public class SendBuffer {
                 buffer.remove(seq);
             }
         }
+    }
+
+    /**
+     * @return Whether or not we can send a packet
+     */
+    public boolean canSend() {
+        return buffer.size() < WINDOW_SIZE;
     }
 }

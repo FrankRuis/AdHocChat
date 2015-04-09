@@ -39,7 +39,6 @@ public class Client extends Observable implements Runnable {
 		destinations = new HashMap<>();
 
 		destinations.put(Protocol.MAINCHAT, new HashSet<Integer>());
-		destinations.get(Protocol.MAINCHAT).add(Protocol.BROADCAST);
 
 		lastAliveBroadcast = 0;
 	}
@@ -95,8 +94,13 @@ public class Client extends Observable implements Runnable {
 	 * @param user
 	 */
 	public void addUser(User user) {
+		// If the user does not yet exist
+		if (user.getAddress() != Protocol.SOURCE && !connectedUsers.containsKey(user.getAddress())) {
+			clientSender.openConnection(user.getAddress());
+			destinations.get(Protocol.MAINCHAT).add(user.getAddress());
+		}
+
 		connectedUsers.put(user.getAddress(), user);
-		clientSender.openConnection(user.getAddress());
 	}
 	
 	/**
@@ -105,8 +109,12 @@ public class Client extends Observable implements Runnable {
 	 */
 	public void removeUser(int address) {
 		connectedUsers.remove(address);
-	}
+		clientSender.closeConnection(address);
 
+		if (destinations.get(Protocol.MAINCHAT).contains(address)) {
+			destinations.get(Protocol.MAINCHAT).remove(address);
+		}
+	}
 
 	/**
 	 * Remove users that have not been seen for a while
@@ -139,6 +147,24 @@ public class Client extends Observable implements Runnable {
 		for (int address : destinations.get(message.getDestination())) {
 			clientSender.sendChatMessage(message, address);
 		}
+	}
+
+	/**
+	 * Acknowledge the given acknowledgement number
+	 * @param ack The acknowledgement number to acknowledge
+	 * @param source  The source
+	 */
+	public void acknowledge(int source, int ack) {
+		clientSender.acknowledge(source, ack);
+	}
+
+	/**
+	 * Send an acknowledgement to the given destination
+	 * @param destination
+	 * @param ack
+	 */
+	public void sendAck(int destination, int ack) {
+		clientSender.sendAck(destination, ack);
 	}
 
 	/**

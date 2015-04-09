@@ -10,12 +10,17 @@ public class Protocol {
 	/**
 	 * Source address
 	 */
-	public static final int SOURCE = 1;
+	public static final int SOURCE = 2;
 
 	/**
 	 * Max amount of milliseconds that a user can be inactive
 	 */
 	public static final long INACTIVITY_LIMIT = 9000l;
+
+	/**
+	 * Timeout time for retransmissions in milliseconds
+	 */
+	public static final long TIMEOUT = 100l;
 
 	/**
 	 * Rate at which the 'alive' messages should be broadcasted
@@ -30,7 +35,7 @@ public class Protocol {
 	/**
 	 * Max hops
 	 */
-	public static final short MAXHOPS = 5;
+	public static final short MAXHOPS = 4;
 
 	/**
 	 * Private chat protocol message
