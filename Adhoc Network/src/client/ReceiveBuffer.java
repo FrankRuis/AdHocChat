@@ -87,7 +87,7 @@ public class ReceiveBuffer extends Thread {
 						if (packet.isFlagSet(Packet.CHATMESSAGE)) {
 							receiveChatMessage(packet);
 
-						// The payload is a command
+							// The payload is a command
 						} else {
 							// Split the command on whitespaces
 							String[] command = new String(packet.getPayload()).trim().split("\\s+");
@@ -110,11 +110,14 @@ public class ReceiveBuffer extends Thread {
 										newUser.setAddress(packet.getSource());
 										client.addUser(newUser);
 
-										client.notifyGUI(Protocol.NOTIFY + " User " + newUser.getName() + " has entered the chat." );
+										client.notifyGUI(Protocol.NOTIFY + " User " + newUser.getName() + " has entered the chat.");
 									} else {
 										// Update the user's last seen timestamp
 										user.setLastSeen();
 									}
+
+									// Forward the alive broadcast
+									client.forwardPacket(packet);
 									break;
 								// Command not known
 								default:
@@ -122,6 +125,10 @@ public class ReceiveBuffer extends Thread {
 									break;
 							}
 						}
+					// The packet was not meant for us
+					} else {
+						// Forward the packet
+						client.forwardPacket(packet);
 					}
 				}
 			} catch (IOException e) {

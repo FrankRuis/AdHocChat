@@ -1,6 +1,7 @@
 package client;
 
 import dataobjects.ChatMessage;
+import dataobjects.Packet;
 import dataobjects.User;
 import utils.Protocol;
 
@@ -161,6 +162,14 @@ public class Client extends Observable implements Runnable {
 		for (int address : destinations.get(destination)) {
 			sendBuffer.sendMessage(message, address);
 		}
+	}
+
+	/**
+	 * Forward the given packet
+	 * @param packet The packet to forward
+	 */
+	public void forwardPacket(Packet packet) {
+		sendBuffer.forwardPacket(packet);
 	}
 	
 	/**

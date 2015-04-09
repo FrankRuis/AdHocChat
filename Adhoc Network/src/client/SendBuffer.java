@@ -86,6 +86,24 @@ public class SendBuffer extends Thread {
 	}
 
 	/**
+	 * Forward the given packet
+	 * @param packet The packet to forward
+	 */
+	public void forwardPacket(Packet packet) {
+		try {
+			// Decrease the maximum amount of hops
+			packet.decreaseHops();
+
+			// Only forward if the amount of hops is higher than zero
+			if (packet.getHops() > 0) {
+				socket.send(new DatagramPacket(packet.getData(), packet.length(), group, port));
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
 	 * Send a message to the given destination
 	 * @param message
 	 * @param destination

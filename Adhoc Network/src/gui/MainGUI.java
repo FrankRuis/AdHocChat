@@ -292,7 +292,7 @@ public class MainGUI implements ActionListener, Observer {
 				currentUser.setAddress(Protocol.SOURCE);
 				
 				// Create the client and add the GUI as an observer
-				client = new Client("228.9.10.11", 4231);
+				client = new Client("228.0.0.4", 1231);
 				client.addObserver(this);
 				
 				// Create a KeyListener for the textfield
@@ -428,7 +428,8 @@ public class MainGUI implements ActionListener, Observer {
 		//Create the menu bar
 		JMenuBar menuBar = new JMenuBar();
 		JMenu mActions = new JMenu("Actions");
-		
+
+		// Create the connection menu items
 		miConnect = new JMenuItem("Connect");
 		miConnect.addActionListener(this);
 		miDisconnect = new JMenuItem("Disconnect");
@@ -436,7 +437,8 @@ public class MainGUI implements ActionListener, Observer {
 		
 		mActions.add(miConnect);
 		mActions.add(miDisconnect);
-		
+
+		// Add the actions menu to the menu bar
 		menuBar.add(mActions);
 		frame.setJMenuBar(menuBar);
 		

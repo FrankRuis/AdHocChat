@@ -10,7 +10,7 @@ public class Protocol {
 	/**
 	 * Source address
 	 */
-	public static final int SOURCE = 1;
+	public static final int SOURCE = 2;
 
 	/**
 	 * Max amount of milliseconds that a user can be inactive
