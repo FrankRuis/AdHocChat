@@ -3,6 +3,7 @@ package client;
 import dataobjects.ChatMessage;
 import dataobjects.Packet;
 import utils.Protocol;
+import utils.SendBuffer;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -11,19 +12,21 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
-public class SendBuffer extends Thread {
+/**
+ * Send buffer class, handles sending packets
+ *
+ * @author Frank
+ */
+public class ClientSender extends Thread {
 
 	private final int WINDOW_SIZE;
 	
-	private Map<Integer, Packet> buffer;
-	private List<Integer> acknowledgements;
-	
 	private MulticastSocket socket;
+
+	private Map<Integer, SendBuffer> openConnections;
 	
 	private boolean connected = false;
 	private InetAddress group;
@@ -36,14 +39,13 @@ public class SendBuffer extends Thread {
 	 * @param group
 	 * @param port
 	 */
-	public SendBuffer(int windowSize, MulticastSocket socket, InetAddress group, int port) {
+	public ClientSender(int windowSize, MulticastSocket socket, InetAddress group, int port) {
 		this.socket = socket;
-		this.WINDOW_SIZE = windowSize;
-		this.buffer = new LinkedHashMap<>();
-		this.acknowledgements = new LinkedList<>();
 		this.group = group;
 		this.port = port;
-		this.connected = true;
+		WINDOW_SIZE = windowSize;
+		connected = true;
+		openConnections = new HashMap<>();
 	}
 	
 	/**
@@ -54,6 +56,14 @@ public class SendBuffer extends Thread {
 	}
 
 	/**
+	 * Open a connection with the given destination
+	 * @param destination
+	 */
+	public void openConnection(int destination) {
+		this.openConnections.put(destination, new SendBuffer(WINDOW_SIZE));
+	}
+
+	/**
 	 * Send a ChatMessage object to the given destination
 	 * @param message
 	 * @param destination
@@ -61,12 +71,15 @@ public class SendBuffer extends Thread {
 	public void sendChatMessage(ChatMessage message, int destination) {
 		if (connected) {
 			try {
+				// Open ByteArray and Object output streams
 				ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 				ObjectOutputStream objectStream = new ObjectOutputStream(new BufferedOutputStream(byteStream));
-	
+
+				// Write the ChatMessage object to the object output stream
 				objectStream.writeObject(message);
 				objectStream.flush();
-				
+
+				// Put the resulting byte array in a packet and set the appropriate flags
 				byte[] sendBuffer = byteStream.toByteArray();
 				Packet packet = new Packet(sendBuffer.length + Packet.HEADER_SIZE);
 				packet.setSource(Protocol.SOURCE);
@@ -74,10 +87,12 @@ public class SendBuffer extends Thread {
 				packet.setHops(Protocol.MAXHOPS);
 				packet.setFlags(false, true);
 				packet.setPayload(sendBuffer);
-				
+
+				// Close the output streams
 				byteStream.close();
 				objectStream.close();
-				
+
+				// Send the packet
 				socket.send(new DatagramPacket(packet.getData(), packet.length(), group, port));
 			} catch (IOException e) {
 				e.printStackTrace();

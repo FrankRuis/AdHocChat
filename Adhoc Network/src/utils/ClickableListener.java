@@ -48,8 +48,11 @@ public class ClickableListener implements MouseListener {
 					userDialogWindow.dispose();
 				}
 
-				// Open a new user dialog window
-				userDialogWindow = new UserDialogWindow(gui, gui.getUser(value));
+				// If the clicked user still exists
+				if (gui.getUser(value) != null) {
+					// Open a new user dialog window
+					userDialogWindow = new UserDialogWindow(gui, gui.getUser(value));
+				}
 			}
 		}
 	}

@@ -20,8 +20,8 @@ public class Client extends Observable implements Runnable {
 	private MulticastSocket socket;
 	private boolean connected = false;
 	
-	private SendBuffer sendBuffer;
-	private ReceiveBuffer receiveBuffer;
+	private ClientSender clientSender;
+	private ClientListener clientListener;
 	
 	private Map<Integer, User> connectedUsers;
 	private Map<String, Set<Integer>> destinations;
@@ -55,10 +55,10 @@ public class Client extends Observable implements Runnable {
 			socket.joinGroup(group);
 			
 			// Create the send and receive buffers
-			sendBuffer = new SendBuffer(20, socket, group, port);
-			receiveBuffer = new ReceiveBuffer(20, socket, this);
-			sendBuffer.start();
-			receiveBuffer.start();
+			clientSender = new ClientSender(20, socket, group, port);
+			clientListener = new ClientListener(20, socket, this);
+			clientSender.start();
+			clientListener.start();
 
 			// Start the while loop
 			connected = true;
@@ -76,8 +76,8 @@ public class Client extends Observable implements Runnable {
 	public void disconnect() {
 		try {
 			// Stop the while loops
-			sendBuffer.disconnect();
-			receiveBuffer.disconnect();
+			clientSender.disconnect();
+			clientListener.disconnect();
 			connected = false;
 			
 			// Leave the multicast group and close the socket
@@ -96,6 +96,7 @@ public class Client extends Observable implements Runnable {
 	 */
 	public void addUser(User user) {
 		connectedUsers.put(user.getAddress(), user);
+		clientSender.openConnection(user.getAddress());
 	}
 	
 	/**
@@ -136,7 +137,7 @@ public class Client extends Observable implements Runnable {
 	 */
 	public void sendChatMessage(ChatMessage message) {
 		for (int address : destinations.get(message.getDestination())) {
-			sendBuffer.sendChatMessage(message, address);
+			clientSender.sendChatMessage(message, address);
 		}
 	}
 
@@ -160,7 +161,7 @@ public class Client extends Observable implements Runnable {
 	 */
 	public void sendMessage(String message, String destination) {
 		for (int address : destinations.get(destination)) {
-			sendBuffer.sendMessage(message, address);
+			clientSender.sendMessage(message, address);
 		}
 	}
 
@@ -169,7 +170,7 @@ public class Client extends Observable implements Runnable {
 	 * @param packet The packet to forward
 	 */
 	public void forwardPacket(Packet packet) {
-		sendBuffer.forwardPacket(packet);
+		clientSender.forwardPacket(packet);
 	}
 	
 	/**
@@ -192,7 +193,7 @@ public class Client extends Observable implements Runnable {
 				removeInactiveUsers();
 
 				// Send an 'alive' broadcast to let others know we're here
-				sendBuffer.sendMessage(Protocol.ALIVE + " " + connectedUsers.get(Protocol.SOURCE).getName(), Protocol.BROADCAST);
+				clientSender.sendMessage(Protocol.ALIVE + " " + connectedUsers.get(Protocol.SOURCE).getName(), Protocol.BROADCAST);
 				lastAliveBroadcast = System.currentTimeMillis();
 			}
 		}

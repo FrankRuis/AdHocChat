@@ -244,6 +244,11 @@ public class MainGUI implements ActionListener, Observer {
 
 			// Make sure the scroll bar is set to the end of the text panel
 			chatPanes.get(destination).setCaretPosition(doc.getLength());
+
+			// If the message was added to a background tab
+			if (!destination.equals(getActiveTab())) {
+				tabPanel.setForegroundAt(tabPanel.indexOfComponent(scrollPanes.get(destination)), Color.red);
+			}
 		}
 	}
 	
@@ -317,6 +322,13 @@ public class MainGUI implements ActionListener, Observer {
 				inputFieldListener = null;
 				client.disconnect();
 				client = null;
+
+				// Remove all tabs except the main tab
+				for (int i = 1; i < tabPanel.getTabCount(); i++) {
+					chatPanes.remove(tabPanel.getTitleAt(i));
+					scrollPanes.remove(tabPanel.getTitleAt(i));
+					tabPanel.removeTabAt(i);
+				}
 			} else {
 				notify("You are not connected.", Protocol.MAINCHAT);
 			}

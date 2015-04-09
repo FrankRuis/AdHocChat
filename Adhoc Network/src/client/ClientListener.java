@@ -12,13 +12,21 @@ import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
-public class ReceiveBuffer extends Thread {
+/**
+ * Receive buffer class, handles receiving packets
+ *
+ * @author Frank
+ */
+public class ClientListener extends Thread {
 
 	private final int WINDOW_SIZE;
 	
 	private Map<Integer, Packet> buffer;
+	private List<Integer> acknowledgements;
 	
 	private MulticastSocket socket;
 	private Client client;
@@ -31,12 +39,13 @@ public class ReceiveBuffer extends Thread {
 	 * @param socket
 	 * @param client
 	 */
-	public ReceiveBuffer(int windowSize, MulticastSocket socket, Client client) {
-		this.WINDOW_SIZE = windowSize;
-		this.buffer = new LinkedHashMap<>();
-		this.connected = true;
+	public ClientListener(int windowSize, MulticastSocket socket, Client client) {
 		this.socket = socket;
 		this.client = client;
+		WINDOW_SIZE = windowSize;
+		buffer = new LinkedHashMap<>();
+		acknowledgements = new LinkedList<>();
+		connected = true;
 	}
 
 	/**
@@ -48,13 +57,15 @@ public class ReceiveBuffer extends Thread {
 	
 	/**
 	 * Extract a ChatMessage object out of a packet
-	 * @param packet
+	 * @param packet The packet containing the ChatMessage object
 	 */
 	public void receiveChatMessage(Packet packet) {
 		try {
+			// ByteArray and Object input streams to read the object stored in the packet payload
 		    ByteArrayInputStream byteStream = new ByteArrayInputStream(packet.getPayload());
 		    ObjectInputStream objectStream = new ObjectInputStream(new BufferedInputStream(byteStream));
-		    
+
+			// Read the ChatMessage object
 		    ChatMessage message = (ChatMessage) objectStream.readObject();
 
 			// Add or update the user
@@ -63,7 +74,8 @@ public class ReceiveBuffer extends Thread {
 
 			// Notify the GUI of the received chat message
 		    client.notifyGUI(message);
-		    
+
+			// Close the input streams
 		    byteStream.close();
 		    objectStream.close();
 		} catch (ClassNotFoundException | IOException e) {
@@ -75,6 +87,7 @@ public class ReceiveBuffer extends Thread {
 	public void run() {
 		while (connected) {
 			try {
+				// Try to receive a packet
 				DatagramPacket datagramPacket = new DatagramPacket(new byte[Packet.SIZE], Packet.SIZE);
 				socket.receive(datagramPacket);
 				Packet packet = new Packet(datagramPacket);
