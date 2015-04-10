@@ -11,6 +11,7 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -209,7 +210,7 @@ public class MainGUI implements ActionListener, Observer {
 	 * @param notification The text for the notification
 	 * @param destination The destination of the notification
 	 */
-	public void notify(String notification, String destination) {
+	public void showNotification(String notification, String destination) {
 		// If a chatpane for the destination exists
 		if (chatPanes.get(destination) != null) {
 			// Get the styled document of the destination
@@ -286,7 +287,7 @@ public class MainGUI implements ActionListener, Observer {
 		// If the connect menu item was pressed
 		if (source.equals(miConnect)) {
 			if (client == null) {
-				notify("Connecting...", Protocol.MAINCHAT);
+				showNotification("Connecting...", Protocol.MAINCHAT);
 				
 				// Ask the user to enter a username
 				String username = (String) JOptionPane.showInputDialog(frame, "Enter your desired username:\n", "Username selection", JOptionPane.PLAIN_MESSAGE, null, null, "");
@@ -310,7 +311,7 @@ public class MainGUI implements ActionListener, Observer {
 				Thread t = new Thread(client);
 				t.start();
 			} else {
-				notify("You are already connected.", Protocol.MAINCHAT);
+				showNotification("You are already connected.", Protocol.MAINCHAT);
 			}
 		}
 		
@@ -329,39 +330,48 @@ public class MainGUI implements ActionListener, Observer {
 					tabPanel.removeTabAt(i);
 				}
 			} else {
-				notify("You are not connected.", Protocol.MAINCHAT);
+				showNotification("You are not connected.", Protocol.MAINCHAT);
 			}
 		}
 	}
 	
 	@Override
-	public void update(Observable o, Object arg) {
-		// If the argument is a ChatMessage object
-		if (arg.getClass().equals(ChatMessage.class)) {
-			this.append((ChatMessage) arg);
-			return;
-		}
-		
-		// If the argument is a String
-		if (arg.getClass().equals(String.class)) {
-			// Split the string on the first space
-			String[] command = ((String) arg).split("\\s+", 2);
+	public void update(Observable o, final Object arg) {
+		try {
+			// Wait until all events have been processed before updating the GUI
+			SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    // If the argument is a ChatMessage object
+                    if (arg.getClass().equals(ChatMessage.class)) {
+                        append((ChatMessage) arg);
+                    }
 
-			// Check the command type
-			switch (command[0]) {
-				case Protocol.PRIVCHAT:
-					newTab(command[1]);
-					break;
-				case Protocol.NOTIFY:
-					notify(command[1], Protocol.MAINCHAT);
-					break;
-				case Protocol.PART:
-					notify("User " + command[1] + " has left the chat.", Protocol.MAINCHAT);
-					break;
-				default:
-					// TODO Unknown command
-					break;
-			}
+                    // If the argument is a String
+                    if (arg.getClass().equals(String.class)) {
+                        // Split the string on the first space
+                        final String[] command = ((String) arg).split("\\s+", 2);
+
+                        // Check the command type
+                        switch (command[0]) {
+                            case Protocol.PRIVCHAT:
+                                newTab(command[1]);
+                                break;
+                            case Protocol.NOTIFY:
+                                showNotification(command[1], Protocol.MAINCHAT);
+                                break;
+                            case Protocol.PART:
+                                showNotification("User " + command[1] + " has left the chat.", Protocol.MAINCHAT);
+                                break;
+                            default:
+								System.err.println("Unknown command received in GUI.");
+								break;
+                        }
+                    }
+                }});
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
 		}
 	}
 	
