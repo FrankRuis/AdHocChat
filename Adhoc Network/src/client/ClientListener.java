@@ -139,8 +139,12 @@ public class ClientListener extends Thread {
 								switch (command[0]) {
 									// Start a private chat
 									case Protocol.PRIVCHAT:
-										client.addDestination(command[1], packet.getSource());
-										client.notifyGUI(command[0] + " " + command[1]);
+										// If the connection is open and the packet is accepted
+										if (openConnections.containsKey(packet.getSource()) && openConnections.get(packet.getSource()).addPacket(packet)) {
+											// Start the private chat
+											client.addDestination(command[1], packet.getSource());
+											client.notifyGUI(command[0] + " " + command[1]);
+										}
 										break;
 									// Refresh the user's 'alive' status
 									case Protocol.ALIVE:

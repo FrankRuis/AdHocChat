@@ -195,6 +195,44 @@ public class ClientSender extends Thread {
 	public void sendMessage(String message, int destination) {
 		if (connected) {
 			try {
+				// Check if a connection to the destination is open
+				if (openConnections.containsKey(destination)) {
+					SendBuffer sendBuffer = openConnections.get(destination);
+
+					// Build the packet
+					byte[] buffer = message.getBytes();
+					Packet packet = new Packet(buffer.length + Packet.HEADER_SIZE);
+					packet.setSource(Protocol.SOURCE);
+					packet.setDestination(destination);
+					packet.setHops(Protocol.MAXHOPS);
+					packet.setSeq(sendBuffer.getSeq());
+					packet.setPayload(buffer);
+					packet.setLength();
+					packet.setChecksum();
+
+					// If we can send a packet, send it and add it to the buffer
+					if (sendBuffer.canSend()) {
+						socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
+						sendBuffer.addPacket(packet);
+					} else {
+						// TODO Buffer full
+						System.out.println("Send buffer full.");
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * Send a message to the given destination
+	 * @param message
+	 * @param destination
+	 */
+	public void sendAliveBroadcast(String message, int destination) {
+		if (connected) {
+			try {
 				byte[] sendBuffer = message.getBytes();
 				Packet packet = new Packet(sendBuffer.length + Packet.HEADER_SIZE);
 				packet.setSource(Protocol.SOURCE);
