@@ -14,6 +14,9 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Send buffer class, handles sending packets
@@ -32,7 +35,7 @@ public class ClientSender extends Thread {
 	private InetAddress group;
 	private int port;
 
-	private long lastRetransmit;
+	private ScheduledExecutorService retransmitScheduler;
 
 	/**
 	 * Constructor
@@ -48,7 +51,6 @@ public class ClientSender extends Thread {
 		WINDOW_SIZE = windowSize;
 		connected = true;
 		openConnections = new HashMap<>();
-		lastRetransmit = System.currentTimeMillis();
 	}
 	
 	/**
@@ -212,22 +214,27 @@ public class ClientSender extends Thread {
 
 	@Override
 	public void run() {
-		while (connected) {
-			// Go through all open connections
-			for (SendBuffer buffer : openConnections.values()) {
-				// Retransmit each unacked packet left in the buffer
-				for (Packet packet : buffer.getUnackedPackets().values()) {
-					try {
-						socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
-					} catch (IOException e) {
-						e.printStackTrace();
+		// Create a retransmission scheduler
+		retransmitScheduler = Executors.newScheduledThreadPool(1);
+		retransmitScheduler.scheduleAtFixedRate(new Runnable() {
+			public void run() {
+				// Go through all open connections
+				for (SendBuffer buffer : openConnections.values()) {
+					// Retransmit each unacked packet left in the buffer
+					for (Packet packet : buffer.getUnackedPackets().values()) {
+						try {
+							socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
 				}
 			}
+		}, Protocol.TIMEOUT, Protocol.TIMEOUT, TimeUnit.MILLISECONDS);
 
-			// Sleep for the amount of milliseconds given by the protocol retransmission timeout
+		while (connected) {
 			try {
-				Thread.sleep(Protocol.TIMEOUT);
+				Thread.sleep(5);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
