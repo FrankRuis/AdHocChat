@@ -184,7 +184,10 @@ public class ClientListener extends Thread {
 					System.err.println("Wrong checksum.");
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				// Ignore the exception if it was expected
+				if (!socket.isClosed()) {
+					e.printStackTrace();
+				}
 			}
 
 			try {
