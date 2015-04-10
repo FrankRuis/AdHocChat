@@ -4,6 +4,7 @@ import dataobjects.ChatMessage;
 import dataobjects.Packet;
 import dataobjects.User;
 import utils.Protocol;
+import utils.ReceiveBuffer;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -12,8 +13,6 @@ import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.MulticastSocket;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,9 +23,8 @@ import java.util.Map;
 public class ClientListener extends Thread {
 
 	private final int WINDOW_SIZE;
-	
-	private Map<Integer, Packet> buffer;
-	private List<Integer> acknowledgements;
+
+	private Map<Integer, ReceiveBuffer> openConnections;
 	
 	private MulticastSocket socket;
 	private Client client;
@@ -43,8 +41,7 @@ public class ClientListener extends Thread {
 		this.socket = socket;
 		this.client = client;
 		WINDOW_SIZE = windowSize;
-		buffer = new LinkedHashMap<>();
-		acknowledgements = new LinkedList<>();
+		openConnections = new LinkedHashMap<>();
 		connected = true;
 	}
 
@@ -54,7 +51,26 @@ public class ClientListener extends Thread {
 	public void disconnect() {
 		connected = false;
 	}
-	
+
+	/**
+	 * Open a connection with the given destination
+	 * @param destination The destination of the connection
+	 */
+	public void openConnection(int destination) {
+		openConnections.put(destination, new ReceiveBuffer(WINDOW_SIZE));
+	}
+
+	/**
+	 * Close the connection with the given destination
+	 * @param destination The destination of the connection
+	 */
+	public void closeConnection(int destination) {
+		// Check if the connection exists
+		if (openConnections.containsKey(destination)) {
+			openConnections.remove(destination);
+		}
+	}
+
 	/**
 	 * Extract a ChatMessage object out of a packet
 	 * @param packet The packet containing the ChatMessage object
@@ -105,8 +121,11 @@ public class ClientListener extends Thread {
 
 							// If the payload is a ChatMessage object
 							} else if (packet.isFlagSet(Packet.CHATMESSAGE)) {
-								// Parse the ChatMessage object
-								receiveChatMessage(packet);
+								// If the connection is open and the packet is accepted
+								if (openConnections.containsKey(packet.getSource()) && openConnections.get(packet.getSource()).addPacket(packet)) {
+									// Parse the ChatMessage object
+									receiveChatMessage(packet);
+								}
 
 								// Acknowledge the received packet
 								client.sendAck(packet.getSource(), packet.getSeq() + 1);
@@ -161,6 +180,12 @@ public class ClientListener extends Thread {
 					System.err.println("Wrong checksum.");
 				}
 			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}

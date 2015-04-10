@@ -213,22 +213,23 @@ public class ClientSender extends Thread {
 	@Override
 	public void run() {
 		while (connected) {
-			// Check if we are due for a retransmission
-			if (System.currentTimeMillis() - lastRetransmit > Protocol.TIMEOUT) {
-				// Go through all open connections
-				for (SendBuffer buffer : openConnections.values()) {
-					// Retransmit each unacked packet left in the buffer
-					for (Packet packet : buffer.getUnackedPackets().values()) {
-						try {
-							socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
+			// Go through all open connections
+			for (SendBuffer buffer : openConnections.values()) {
+				// Retransmit each unacked packet left in the buffer
+				for (Packet packet : buffer.getUnackedPackets().values()) {
+					try {
+						socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
+					} catch (IOException e) {
+						e.printStackTrace();
 					}
 				}
+			}
 
-				// Update the last retransmit time
-				lastRetransmit = System.currentTimeMillis();
+			// Sleep for the amount of milliseconds given by the protocol retransmission timeout
+			try {
+				Thread.sleep(Protocol.TIMEOUT);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
 	}

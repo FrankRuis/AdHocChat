@@ -97,6 +97,7 @@ public class Client extends Observable implements Runnable {
 		// If the user does not yet exist
 		if (user.getAddress() != Protocol.SOURCE && !connectedUsers.containsKey(user.getAddress())) {
 			clientSender.openConnection(user.getAddress());
+			clientListener.openConnection(user.getAddress());
 			destinations.get(Protocol.MAINCHAT).add(user.getAddress());
 		}
 
@@ -110,6 +111,7 @@ public class Client extends Observable implements Runnable {
 	public void removeUser(int address) {
 		connectedUsers.remove(address);
 		clientSender.closeConnection(address);
+		clientListener.closeConnection(address);
 
 		if (destinations.get(Protocol.MAINCHAT).contains(address)) {
 			destinations.get(Protocol.MAINCHAT).remove(address);
@@ -221,6 +223,12 @@ public class Client extends Observable implements Runnable {
 				// Send an 'alive' broadcast to let others know we're here
 				clientSender.sendMessage(Protocol.ALIVE + " " + connectedUsers.get(Protocol.SOURCE).getName(), Protocol.BROADCAST);
 				lastAliveBroadcast = System.currentTimeMillis();
+			}
+
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
 	}
