@@ -329,6 +329,8 @@ public class MainGUI implements ActionListener, Observer {
 					scrollPanes.remove(tabPanel.getTitleAt(i));
 					tabPanel.removeTabAt(i);
 				}
+
+				showNotification("Disconnected.", Protocol.MAINCHAT);
 			} else {
 				showNotification("You are not connected.", Protocol.MAINCHAT);
 			}

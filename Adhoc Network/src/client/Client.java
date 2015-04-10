@@ -82,8 +82,6 @@ public class Client extends Observable implements Runnable {
 			// Leave the multicast group and close the socket
 			socket.leaveGroup(group);
 			socket.close();
-			
-			notifyGUI(Protocol.NOTIFY  + " Disconnected.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
