@@ -3,7 +3,7 @@ package client;
 import dataobjects.ChatMessage;
 import dataobjects.Packet;
 import dataobjects.User;
-import utils.Encryption;
+import encryption.Encryption;
 import utils.Protocol;
 import utils.ReceiveBuffer;
 

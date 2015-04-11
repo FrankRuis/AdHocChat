@@ -80,4 +80,9 @@ public class Protocol {
 	 * NAME_CHANGE protocol message for signaling a name change
 	 */
 	public static final String NAME_CHANGE = "NMCHG";
+
+	/**
+	 * KEY_EXCHANGE protocol message for signalling a key exchange
+	 */
+	public static final String KEY_EXCHANGE = "KEY";
 }
