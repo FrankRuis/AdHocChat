@@ -69,7 +69,7 @@ public class MainGUI implements ActionListener, Observer {
 			client.addDestination(user.getName(), user.getAddress());
 			client.sendMessage(Protocol.PRIVCHAT + " " + currentUser.getName(), user.getName());
 		} else {
-			// TODO User not in known users list
+			showNotification("There is no open connection with that user.", Protocol.MAINCHAT);
 		}
 	}
 
@@ -370,9 +370,7 @@ public class MainGUI implements ActionListener, Observer {
                         }
                     }
                 }});
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
+		} catch (InterruptedException | InvocationTargetException e) {
 			e.printStackTrace();
 		}
 	}

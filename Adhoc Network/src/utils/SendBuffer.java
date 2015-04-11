@@ -29,7 +29,7 @@ public class SendBuffer {
 
     /**
      * Add the given packet to the buffer
-     * @param packet
+     * @param packet The packet to add
      */
     public void addPacket(Packet packet) {
         // If the buffer still has space
@@ -45,8 +45,7 @@ public class SendBuffer {
                 seq = 0;
             }
         } else {
-            //TODO Send window exceeded
-            System.out.println("Send window exceeded");
+            System.err.println("Send window exceeded.");
         }
     }
 

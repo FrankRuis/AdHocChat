@@ -23,7 +23,7 @@ public class TabMouseListener implements MouseListener {
      * Invoked when the mouse button has been clicked (pressed
      * and released) on a component.
      *
-     * @param e
+     * @param e The mouse event
      */
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -53,7 +53,7 @@ public class TabMouseListener implements MouseListener {
     /**
      * Invoked when a mouse button has been pressed on a component.
      *
-     * @param e
+     * @param e The mouse event
      */
     @Override
     public void mousePressed(MouseEvent e) {
@@ -63,7 +63,7 @@ public class TabMouseListener implements MouseListener {
     /**
      * Invoked when a mouse button has been released on a component.
      *
-     * @param e
+     * @param e The mouse event
      */
     @Override
     public void mouseReleased(MouseEvent e) {
@@ -73,7 +73,7 @@ public class TabMouseListener implements MouseListener {
     /**
      * Invoked when the mouse enters a component.
      *
-     * @param e
+     * @param e The mouse event
      */
     @Override
     public void mouseEntered(MouseEvent e) {
@@ -83,7 +83,7 @@ public class TabMouseListener implements MouseListener {
     /**
      * Invoked when the mouse exits a component.
      *
-     * @param e
+     * @param e The mouse event
      */
     @Override
     public void mouseExited(MouseEvent e) {

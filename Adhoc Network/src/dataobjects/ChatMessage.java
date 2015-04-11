@@ -1,6 +1,6 @@
 package dataobjects;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.Serializable;
 
 /**
@@ -24,22 +24,15 @@ public class ChatMessage implements Serializable {
 	private String message;
 	
 	/**
-	 * Constructor
-	 */
-	public ChatMessage() {
-		
-	}
-	
-	/**
 	 * Constructor with assignments
-	 * @param user
-	 * @param color
-	 * @param fontSize
-	 * @param font
-	 * @param bold
-	 * @param italic
-	 * @param message
-	 * @param destination
+	 * @param user The user that sent the chat message
+	 * @param color The text color
+	 * @param fontSize The font size
+	 * @param font The font name
+	 * @param bold Whether or not the text should be bolded
+	 * @param italic Whether or not the text should be italicized
+	 * @param message The message text
+	 * @param destination The destination tab name
 	 */
 	public ChatMessage(User user, Color color, int fontSize, String font, boolean bold, boolean italic, String message, String destination) {
 		this.user = user;

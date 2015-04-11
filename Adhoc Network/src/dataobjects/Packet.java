@@ -40,17 +40,8 @@ public class Packet {
 	}
 	
 	/**
-	 * Constructor for a packet with data
-	 * @param data
-	 */
-	public Packet(byte[] data) {
-		buffer = ByteBuffer.allocate(data.length);
-		buffer.put(data);
-	}
-	
-	/**
 	 * Constructor for reading a received DatagramPacket
-	 * @param packet
+	 * @param packet The datagram packet to convert
 	 */
 	public Packet(DatagramPacket packet) {
 		buffer = ByteBuffer.allocate(Packet.SIZE);
@@ -59,7 +50,7 @@ public class Packet {
 	
 	/**
 	 * Set the source address
-	 * @param source
+	 * @param source The source address
 	 */
 	public void setSource(int source) {
 		buffer.putInt(SRC_POS, source);
@@ -74,7 +65,7 @@ public class Packet {
 	
 	/**
 	 * Set the destination address
-	 * @param destination
+	 * @param destination The destination address
 	 */
 	public void setDestination(int destination) {
 		buffer.putInt(DST_POS, destination);
@@ -89,7 +80,7 @@ public class Packet {
 	
 	/**
 	 * Set the sequence number
-	 * @param seq
+	 * @param seq The sequence number
 	 */
 	public void setSeq(int seq) {
 		buffer.putInt(SEQ_POS, seq);
@@ -104,7 +95,7 @@ public class Packet {
 	
 	/**
 	 * Set the acknowledgement number
-	 * @param ack
+	 * @param ack The acknowledgement number
 	 */
 	public void setAck(int ack) {
 		buffer.putInt(ACK_POS, ack);
@@ -118,25 +109,13 @@ public class Packet {
 	}
 	
 	/**
-	 * Set the flags. <br> <br>
-	 * <b>Up to 16 flags can be set, starting from the LSB:</b> <br>
-	 * 1. ACK <br>
-	 * 2. ChatMessage <br>
-	 * 
-	 * @param flags
-	 */
-	public void setFlags(short flags) {
-		buffer.putShort(FLG_POS, flags);
-	}
-	
-	/**
 	 * Set the flags, accepts up to 16 booleans. <br>
 	 * First boolean corresponds to the LSB and the first flag. <br> <br>
 	 * <b>Flags:</b><br>
 	 * 1. ACK <br>
 	 * 2. ChatMessage <br>
 	 * 
-	 * @param flg
+	 * @param flg The flags
 	 */
 	public void setFlags(boolean... flg) {
 		// If any of the flags are set
@@ -170,7 +149,7 @@ public class Packet {
 	 * 1. ACK <br>
 	 * 2. ChatMessage <br>
 	 * 
-	 * @param n
+	 * @param n The flag index
 	 * @return true is the flag is set, else false
 	 */
 	public boolean isFlagSet(int n) {
@@ -189,7 +168,7 @@ public class Packet {
 	
 	/**
 	 * Set the hop count
-	 * @param hops
+	 * @param hops The hop count
 	 */
 	public void setHops(short hops) {
 		buffer.putShort(HOP_POS, hops);
@@ -225,7 +204,7 @@ public class Packet {
 
 	/**
 	 * Set the checksum
-	 * @param checksum
+	 * @param checksum The checksum
 	 */
 	public void setChecksum(short checksum) {
 		buffer.putShort(CSM_POS, checksum);
@@ -254,7 +233,7 @@ public class Packet {
 	
 	/**
 	 * Set the payload
-	 * @param payload
+	 * @param payload The payload
 	 */
 	public void setPayload(byte[] payload) {
 		buffer.position(PLD_POS);
@@ -278,15 +257,6 @@ public class Packet {
 		
 		// Perform bitwise complement operation and return the resulting checksum
 		return (short) ~checksum;
-	}
-	
-	/**
-	 * Set the packet data to the given byte array
-	 * @param data
-	 */
-	public void setData(byte[] data) {
-		buffer.clear();
-		buffer.put(data);
 	}
 	
 	/**

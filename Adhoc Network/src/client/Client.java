@@ -89,7 +89,7 @@ public class Client extends Observable implements Runnable {
 	
 	/**
 	 * Add a user to the list of connected users
-	 * @param user
+	 * @param user The user to add
 	 */
 	public void addUser(User user) {
 		// If the user does not yet exist
@@ -104,7 +104,7 @@ public class Client extends Observable implements Runnable {
 	
 	/**
 	 * Remove a user from the list of connected users
-	 * @param address
+	 * @param address The user's address
 	 */
 	public void removeUser(int address) {
 		connectedUsers.remove(address);
@@ -141,7 +141,7 @@ public class Client extends Observable implements Runnable {
 
 	/**
 	 * Send a ChatMessage object
-	 * @param message
+	 * @param message The ChatMessage object to send
 	 */
 	public void sendChatMessage(ChatMessage message) {
 		for (int address : destinations.get(message.getDestination())) {
@@ -160,8 +160,8 @@ public class Client extends Observable implements Runnable {
 
 	/**
 	 * Send an acknowledgement to the given destination
-	 * @param destination
-	 * @param ack
+	 * @param destination The destination address
+	 * @param ack The acknowledgement number
 	 */
 	public void sendAck(int destination, int ack) {
 		clientSender.sendAck(destination, ack);
@@ -169,8 +169,8 @@ public class Client extends Observable implements Runnable {
 
 	/**
 	 * Add a new destination
-	 * @param name
-	 * @param addresses
+	 * @param name The destination name
+	 * @param addresses The destination addresses (0 or more)
 	 */
 	public void addDestination(String name, int... addresses) {
 		destinations.put(name, new HashSet<Integer>());
@@ -182,8 +182,8 @@ public class Client extends Observable implements Runnable {
 
 	/**
 	 * Send a message
-	 * @param message
-	 * @param destination
+	 * @param message The message to send
+	 * @param destination The destination address
 	 */
 	public void sendMessage(String message, String destination) {
 		for (int address : destinations.get(destination)) {

@@ -33,9 +33,9 @@ public class ClientListener extends Thread {
 	
 	/**
 	 * Constructor
-	 * @param windowSize
-	 * @param socket
-	 * @param client
+	 * @param windowSize The maximum window size for the send windows
+	 * @param socket The multicast socket
+	 * @param client The client object
 	 */
 	public ClientListener(int windowSize, MulticastSocket socket, Client client) {
 		this.socket = socket;
@@ -180,7 +180,6 @@ public class ClientListener extends Thread {
 						}
 					}
 				} else {
-					// TODO Wrong checksum
 					System.err.println("Wrong checksum.");
 				}
 			} catch (IOException e) {

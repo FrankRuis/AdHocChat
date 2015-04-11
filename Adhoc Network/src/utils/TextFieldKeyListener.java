@@ -16,10 +16,10 @@ import java.util.LinkedList;
  * @author Frank
  */
 public class TextFieldKeyListener extends KeyAdapter {
-	
+
 	// Maximum amount of messages in the history
-	private final int MAX_HISTORY = 10;
-	
+	private static final int MAX_HISTORY = 10;
+
 	private MainGUI gui;
 	private Client client;
 	private LinkedList<String> messageHistory;

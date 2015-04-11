@@ -35,14 +35,12 @@ public class ClientSender extends Thread {
 	private InetAddress group;
 	private int port;
 
-	private ScheduledExecutorService retransmitScheduler;
-
 	/**
 	 * Constructor
-	 * @param windowSize
-	 * @param socket
-	 * @param group
-	 * @param port
+	 * @param windowSize The maximum window size
+	 * @param socket The multicast socket
+	 * @param group The multicast group
+	 * @param port The port number
 	 */
 	public ClientSender(int windowSize, MulticastSocket socket, InetAddress group, int port) {
 		this.socket = socket;
@@ -94,8 +92,8 @@ public class ClientSender extends Thread {
 
 	/**
 	 * Send an acknowledgement to the given destination
-	 * @param destination
-	 * @param ack
+	 * @param destination The destination address
+	 * @param ack The acknowledgement number
 	 */
 	public void sendAck(int destination, int ack) {
 		try {
@@ -116,8 +114,8 @@ public class ClientSender extends Thread {
 
 	/**
 	 * Send a ChatMessage object to the given destination
-	 * @param message
-	 * @param destination
+	 * @param message The ChatMessage object to send
+	 * @param destination The destination address
 	 */
 	public void sendChatMessage(ChatMessage message, int destination) {
 		if (connected) {
@@ -155,12 +153,10 @@ public class ClientSender extends Thread {
 						socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
 						sendBuffer.addPacket(packet);
 					} else {
-						// TODO Buffer full
-						System.out.println("Send buffer full.");
+						System.err.println("Send buffer full.");
 					}
 				} else {
-					// TODO Trying to send to an unopened connection
-					System.out.println("Trying to send to an unopened connection");
+					System.err.println("Trying to send to an unopened connection");
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -189,8 +185,8 @@ public class ClientSender extends Thread {
 
 	/**
 	 * Send a message to the given destination
-	 * @param message
-	 * @param destination
+	 * @param message The message to send
+	 * @param destination The destination address
 	 */
 	public void sendMessage(String message, int destination) {
 		if (connected) {
@@ -215,8 +211,7 @@ public class ClientSender extends Thread {
 						socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
 						sendBuffer.addPacket(packet);
 					} else {
-						// TODO Buffer full
-						System.out.println("Send buffer full.");
+						System.err.println("Send buffer full.");
 					}
 				}
 			} catch (IOException e) {
@@ -227,8 +222,8 @@ public class ClientSender extends Thread {
 
 	/**
 	 * Send a message to the given destination
-	 * @param message
-	 * @param destination
+	 * @param message The message to send
+	 * @param destination The destination address
 	 */
 	public void sendAliveBroadcast(String message, int destination) {
 		if (connected) {
@@ -253,7 +248,7 @@ public class ClientSender extends Thread {
 	@Override
 	public void run() {
 		// Create a retransmission scheduler
-		retransmitScheduler = Executors.newScheduledThreadPool(1);
+		ScheduledExecutorService retransmitScheduler = Executors.newScheduledThreadPool(1);
 		retransmitScheduler.scheduleAtFixedRate(new Runnable() {
 			public void run() {
 				// Go through all open connections

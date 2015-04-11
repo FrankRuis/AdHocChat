@@ -15,8 +15,6 @@ public class ReceiveBuffer {
 
     private Set<Integer> buffer;
 
-    private int expectedSeq;
-
     /**
      * Constructor
      * @param windowSize The maximum window size
@@ -40,7 +38,6 @@ public class ReceiveBuffer {
 
             // Add the packet to the buffer
             buffer.add(packet.getSeq());
-            expectedSeq = packet.getSeq() + 1;
 
             // Return true to signal acceptance of the packet
             return true;

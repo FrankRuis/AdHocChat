@@ -59,40 +59,43 @@ public class EmoticonListener implements DocumentListener {
 				String insertion = null;
 				
 				try {
+					// Get the inserted text
 					insertion = doc.getText(e.getOffset(), e.getLength());
 				} catch (BadLocationException ex) {
 					ex.printStackTrace();
 				}
-				
-				// Go through all possible emoticons
-				for (String regex : regexMap.keySet()) {
-					// Get the index of the emoticon in the insertion
-					Pattern pattern = Pattern.compile(regex);
-					Matcher matcher = pattern.matcher(insertion);
 
-					
-					try {
-						// If the text contained the regex of the emoticon
-						while (matcher.find()) {
-							// The index of the emoticon in the insertion
-							int i = matcher.start();
+				if (insertion != null) {
+					// Go through all possible emoticons
+					for (String regex : regexMap.keySet()) {
+						// Get the index of the emoticon in the insertion
+						Pattern pattern = Pattern.compile(regex);
+						Matcher matcher = pattern.matcher(insertion);
 
-							// Make an attributeset with the attributes of the regex
-							SimpleAttributeSet attributeSet = new SimpleAttributeSet(doc.getCharacterElement(e.getOffset() + i).getAttributes());
-							
-							// Check if there is no icon yet
-							if (StyleConstants.getIcon(attributeSet) == null) {
-			
-								// Set the icon to the corresponding regex
-								StyleConstants.setIcon(attributeSet, regexMap.get(regex));
-			
-								// Remove the regex string and insert the icon
-								doc.remove(e.getOffset() + i, matcher.group().length());
-								doc.insertString(e.getOffset() + i, matcher.group(), attributeSet);
+
+						try {
+							// If the text contained the regex of the emoticon
+							while (matcher.find()) {
+								// The index of the emoticon in the insertion
+								int i = matcher.start();
+
+								// Make an attributeset with the attributes of the regex
+								SimpleAttributeSet attributeSet = new SimpleAttributeSet(doc.getCharacterElement(e.getOffset() + i).getAttributes());
+
+								// Check if there is no icon yet
+								if (StyleConstants.getIcon(attributeSet) == null) {
+
+									// Set the icon to the corresponding regex
+									StyleConstants.setIcon(attributeSet, regexMap.get(regex));
+
+									// Remove the regex string and insert the icon
+									doc.remove(e.getOffset() + i, matcher.group().length());
+									doc.insertString(e.getOffset() + i, matcher.group(), attributeSet);
+								}
 							}
+						} catch (BadLocationException ex) {
+							ex.printStackTrace();
 						}
-					} catch (BadLocationException ex) {
-						ex.printStackTrace();
 					}
 				}
 			}

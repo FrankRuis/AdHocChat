@@ -22,21 +22,6 @@ public class User implements Serializable {
 	private Timestamp lastSeen;
 	
 	/**
-	 * Constructor with default values
-	 */
-	public User() {
-		this.name = "Anonymous";
-		this.lastSeen = new Timestamp(System.currentTimeMillis());
-		
-		// Choose a random color for the user name
-		Random random = new Random();
-		float hue = random.nextFloat();
-		float saturation = 1f;
-		float luminance = 0.8f;
-		this.color = Color.getHSBColor(hue, saturation, luminance);
-	}
-	
-	/**
 	 * Constructor with assignments
 	 * @param name The username
 	 * @param color The color for the username, random color is chosen if null

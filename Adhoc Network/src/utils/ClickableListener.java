@@ -18,7 +18,6 @@ public class ClickableListener implements MouseListener {
 
 	private JTextPane textPane;
 	private MainGUI gui;
-	private String tag = "clickable";
 	private UserDialogWindow userDialogWindow;
 
 	/**
@@ -32,6 +31,9 @@ public class ClickableListener implements MouseListener {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
+		// The tag name of the clickable attribute
+		String tag = "clickable";
+
 		// Get the clicked element
 		Element element = textPane.getStyledDocument().getCharacterElement(textPane.viewToModel(e.getPoint()));
 		
