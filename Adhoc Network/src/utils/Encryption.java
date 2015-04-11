@@ -13,8 +13,8 @@ import java.security.NoSuchAlgorithmException;
  * @author Frank
  */
 public class Encryption {
-    protected static String key = "5D79CD244987B";
-    protected static String iv = "D231FC4965EB9";
+    protected static String key = "262b285e295e2d3c";
+    protected static String iv = "65502a5c62515b64";
 
     /**
      * Encrypt the given byte array

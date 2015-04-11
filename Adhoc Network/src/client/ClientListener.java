@@ -115,10 +115,13 @@ public class ClientListener extends Thread {
 					if (packet.getSource() != Protocol.getSourceAddress()) {
 						// If we are the destination
 						if (packet.getDestination() == Protocol.BROADCAST || packet.getDestination() == Protocol.getSourceAddress()) {
-							// Decrypt the packet
-							byte[] decryptedPayload = Encryption.decrypt(packet.getPayload());
-							packet.setPayload(decryptedPayload);
-							packet.setLength(Packet.HEADER_SIZE + decryptedPayload.length);
+							// If the packet is encrypted
+							if (packet.isFlagSet(Packet.ENCRYPTION)) {
+								// Decrypt the packet
+								byte[] decryptedPayload = Encryption.decrypt(packet.getPayload());
+								packet.setPayload(decryptedPayload);
+								packet.setLength(Packet.HEADER_SIZE + decryptedPayload.length);
+							}
 
 							// If it is an acknowledgement
 							if (packet.isFlagSet(Packet.ACK)) {

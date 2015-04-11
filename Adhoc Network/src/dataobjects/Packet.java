@@ -17,6 +17,7 @@ public class Packet {
 	/* Flags */
 	public static final int ACK = 1;
 	public static final int CHATMESSAGE = 2;
+	public static final int ENCRYPTION = 3;
 	
 	/* Header positions */
 	private final int SRC_POS = 0; // Source
@@ -114,6 +115,7 @@ public class Packet {
 	 * <b>Flags:</b><br>
 	 * 1. ACK <br>
 	 * 2. ChatMessage <br>
+	 * 3. Encryption <br>
 	 * 
 	 * @param flg The flags
 	 */
@@ -148,6 +150,7 @@ public class Packet {
 	 * <b>Flags:</b><br>
 	 * 1. ACK <br>
 	 * 2. ChatMessage <br>
+	 * 3. Encryption <br>
 	 * 
 	 * @param n The flag index
 	 * @return true is the flag is set, else false

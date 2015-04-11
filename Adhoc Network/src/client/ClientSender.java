@@ -140,7 +140,7 @@ public class ClientSender extends Thread {
 					packet.setDestination(destination);
 					packet.setHops(Protocol.MAXHOPS);
 					packet.setSeq(sendBuffer.getSeq());
-					packet.setFlags(false, true);
+					packet.setFlags(false, true, true);
 					packet.setPayload(buffer);
 					packet.setLength();
 					packet.setChecksum();
@@ -205,6 +205,7 @@ public class ClientSender extends Thread {
 					packet.setDestination(destination);
 					packet.setHops(Protocol.MAXHOPS);
 					packet.setSeq(sendBuffer.getSeq());
+					packet.setFlags(false, false, true);
 					packet.setPayload(buffer);
 					packet.setLength();
 					packet.setChecksum();
@@ -236,7 +237,7 @@ public class ClientSender extends Thread {
 				packet.setSource(Protocol.getSourceAddress());
 				packet.setDestination(destination);
 				packet.setHops(Protocol.MAXHOPS);
-				packet.setFlags(false, false);
+				packet.setFlags(false, false, true);
 				packet.setPayload(sendBuffer);
 				packet.setLength();
 				packet.setChecksum();
