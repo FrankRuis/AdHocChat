@@ -16,11 +16,6 @@ public class Protocol {
 	public static final String MAINCHAT = "Chatroom";
 
 	/**
-	 * Source address
-	 */
-	public static final int SOURCE = 1;
-
-	/**
 	 * @return The source address as an integer
 	 */
 	public static int getSourceAddress() {

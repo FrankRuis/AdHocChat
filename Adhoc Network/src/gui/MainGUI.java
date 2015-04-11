@@ -302,7 +302,7 @@ public class MainGUI implements ActionListener, Observer {
 				currentUser = new User(username.trim(), null);
 				
 				// Set the user's address
-				currentUser.setAddress(Protocol.SOURCE);
+				currentUser.setAddress(Protocol.getSourceAddress());
 				
 				// Create the client and add the GUI as an observer
 				client = new Client("228.0.0.4", 1231);

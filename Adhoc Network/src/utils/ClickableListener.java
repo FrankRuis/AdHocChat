@@ -44,7 +44,7 @@ public class ClickableListener implements MouseListener {
 		// Check the element contained the clickable attribute
 		if (value > 0) {
 			// If the value is not equal to our address
-			if (value != Protocol.SOURCE) {
+			if (value != Protocol.getSourceAddress()) {
 				// If a window is already open, dispose it
 				if (userDialogWindow != null) {
 					userDialogWindow.dispose();

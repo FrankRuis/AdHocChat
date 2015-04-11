@@ -98,7 +98,7 @@ public class Client extends Observable implements Runnable {
 	 */
 	public void addUser(User user) {
 		// If the user does not yet exist
-		if (user.getAddress() != Protocol.SOURCE && !connectedUsers.containsKey(user.getAddress())) {
+		if (user.getAddress() != Protocol.getSourceAddress() && !connectedUsers.containsKey(user.getAddress())) {
 			clientSender.openConnection(user.getAddress());
 			clientListener.openConnection(user.getAddress());
 			destinations.get(Protocol.MAINCHAT).add(user.getAddress());
@@ -127,7 +127,7 @@ public class Client extends Observable implements Runnable {
 	public void removeInactiveUsers() {
 		for (User user : connectedUsers.values()) {
 			// If the last seen timestamp was set more milliseconds ago than the inactivity limit allows
-			if (user.getAddress() != Protocol.SOURCE && (System.currentTimeMillis() - user.getLastSeen().getTime()) > Protocol.INACTIVITY_LIMIT) {
+			if (user.getAddress() != Protocol.getSourceAddress() && (System.currentTimeMillis() - user.getLastSeen().getTime()) > Protocol.INACTIVITY_LIMIT) {
 				// Remove the user
 				this.removeUser(user.getAddress());
 				notifyGUI(Protocol.PART + " " + user.getName());
@@ -224,7 +224,7 @@ public class Client extends Observable implements Runnable {
 				removeInactiveUsers();
 
 				// Send an 'alive' broadcast to let others know we're here
-				clientSender.sendAliveBroadcast(Protocol.ALIVE + " " + connectedUsers.get(Protocol.SOURCE).getName(), Protocol.BROADCAST);
+				clientSender.sendAliveBroadcast(Protocol.ALIVE + " " + connectedUsers.get(Protocol.getSourceAddress()).getName(), Protocol.BROADCAST);
 				lastAliveBroadcast = System.currentTimeMillis();
 			}
 

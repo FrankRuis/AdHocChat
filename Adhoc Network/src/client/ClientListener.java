@@ -111,9 +111,9 @@ public class ClientListener extends Thread {
 				// Check the checksum
 				if (packet.getChecksum() == packet.calculateChecksum()) {
 					// If the packet was not sent by us
-					if (packet.getSource() != Protocol.SOURCE) {
+					if (packet.getSource() != Protocol.getSourceAddress()) {
 						// If we are the destination
-						if (packet.getDestination() == Protocol.BROADCAST || packet.getDestination() == Protocol.SOURCE) {
+						if (packet.getDestination() == Protocol.BROADCAST || packet.getDestination() == Protocol.getSourceAddress()) {
 							// If it is an acknowledgement
 							if (packet.isFlagSet(Packet.ACK)) {
 								// Handle the acknowledgement

@@ -98,7 +98,7 @@ public class ClientSender extends Thread {
 	public void sendAck(int destination, int ack) {
 		try {
 			Packet packet = new Packet(Packet.HEADER_SIZE);
-			packet.setSource(Protocol.SOURCE);
+			packet.setSource(Protocol.getSourceAddress());
 			packet.setDestination(destination);
 			packet.setAck(ack);
 			packet.setHops(Protocol.MAXHOPS);
@@ -135,7 +135,7 @@ public class ClientSender extends Thread {
 					// Put the resulting byte array in a packet and set the appropriate flags
 					byte[] buffer = byteStream.toByteArray();
 					Packet packet = new Packet(buffer.length + Packet.HEADER_SIZE);
-					packet.setSource(Protocol.SOURCE);
+					packet.setSource(Protocol.getSourceAddress());
 					packet.setDestination(destination);
 					packet.setHops(Protocol.MAXHOPS);
 					packet.setSeq(sendBuffer.getSeq());
@@ -198,7 +198,7 @@ public class ClientSender extends Thread {
 					// Build the packet
 					byte[] buffer = message.getBytes();
 					Packet packet = new Packet(buffer.length + Packet.HEADER_SIZE);
-					packet.setSource(Protocol.SOURCE);
+					packet.setSource(Protocol.getSourceAddress());
 					packet.setDestination(destination);
 					packet.setHops(Protocol.MAXHOPS);
 					packet.setSeq(sendBuffer.getSeq());
@@ -230,7 +230,7 @@ public class ClientSender extends Thread {
 			try {
 				byte[] sendBuffer = message.getBytes();
 				Packet packet = new Packet(sendBuffer.length + Packet.HEADER_SIZE);
-				packet.setSource(Protocol.SOURCE);
+				packet.setSource(Protocol.getSourceAddress());
 				packet.setDestination(destination);
 				packet.setHops(Protocol.MAXHOPS);
 				packet.setFlags(false, false);
