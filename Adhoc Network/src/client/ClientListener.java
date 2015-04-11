@@ -172,6 +172,7 @@ public class ClientListener extends Thread {
 										// If the connection is open and the packet is accepted
 										if (openConnections.containsKey(packet.getSource()) && openConnections.get(packet.getSource()).addPacket(packet)) {
 											client.notifyGUI(Protocol.NOTIFY + " User " + command[1] + " changed their name to " + command[2] + ".");
+											client.getUser(packet.getSource()).setName(command[2]);
 										}
 										break;
 									// Command not known
@@ -194,6 +195,7 @@ public class ClientListener extends Thread {
 				// Ignore the exception if it was expected
 				if (!socket.isClosed()) {
 					e.printStackTrace();
+					client.notifyGUI(Protocol.NOTIFY + " Connection lost.");
 				}
 			}
 		}

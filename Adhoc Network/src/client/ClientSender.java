@@ -264,13 +264,5 @@ public class ClientSender extends Thread {
 				}
 			}
 		}, Protocol.TIMEOUT, Protocol.TIMEOUT, TimeUnit.MILLISECONDS);
-
-		while (connected) {
-			try {
-				Thread.sleep(5);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 }
