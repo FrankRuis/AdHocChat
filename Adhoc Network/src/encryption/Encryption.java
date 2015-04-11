@@ -11,6 +11,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 
 /**
  * Encryption class for encrypting packet payload
@@ -64,6 +65,7 @@ public class Encryption {
             IvParameterSpec ivParameterSpec = new IvParameterSpec(iv.getBytes());
 
             cipher.init(Cipher.DECRYPT_MODE, aesKey, ivParameterSpec);
+
             return cipher.doFinal(toDecrypt);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -72,6 +74,18 @@ public class Encryption {
         } catch (InvalidKeyException e) {
             e.printStackTrace();
         } catch (BadPaddingException e) {
+            // Try the standard key as a failsafe
+            try {
+                Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+                SecretKey aesKey = new SecretKeySpec(standardKey.getBytes(), "AES");
+                IvParameterSpec ivParameterSpec = new IvParameterSpec(iv.getBytes());
+
+                cipher.init(Cipher.DECRYPT_MODE, aesKey, ivParameterSpec);
+
+                return cipher.doFinal(toDecrypt);
+            } catch (InvalidAlgorithmParameterException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException | NoSuchPaddingException ex) {
+                ex.printStackTrace();
+            }
             e.printStackTrace();
         } catch (IllegalBlockSizeException e) {
             e.printStackTrace();

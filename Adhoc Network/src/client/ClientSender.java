@@ -238,7 +238,7 @@ public class ClientSender extends Thread {
 	public void sendAliveBroadcast(String message, int destination) {
 		if (connected) {
 			try {
-				byte[] sendBuffer = Encryption.encrypt(message.getBytes(), client.getSymmetricKey(destination));
+				byte[] sendBuffer = Encryption.encrypt(message.getBytes(), null);
 				Packet packet = new Packet(sendBuffer.length + Packet.HEADER_SIZE);
 				packet.setSource(Protocol.getSourceAddress());
 				packet.setDestination(destination);

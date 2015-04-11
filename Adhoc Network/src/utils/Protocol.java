@@ -23,7 +23,7 @@ public class Protocol {
 			return ((InetAddress.getLocalHost().getAddress() [0] & 0xFF) << (3*8)) +
                     ((InetAddress.getLocalHost().getAddress() [1] & 0xFF) << (2*8)) +
                     ((InetAddress.getLocalHost().getAddress() [2] & 0xFF) << (1*8)) +
-                    (InetAddress.getLocalHost().getAddress() [3] &  0xFF);
+                    (InetAddress.getLocalHost().getAddress() [3] &  0xFF) + 1;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
