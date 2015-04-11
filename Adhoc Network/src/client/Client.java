@@ -114,7 +114,6 @@ public class Client extends Observable implements Runnable {
 	 * @param destination The destination of the exchange
 	 */
 	public void endKeyExchange(int destination) {
-		System.out.println("Key exchange succesful");
 		keyPairs.get(destination).setExchangeSuccesful(true);
 	}
 
@@ -130,7 +129,6 @@ public class Client extends Observable implements Runnable {
 		DiffieHelman diffieHelman = keyPairs.get(destination);
 		diffieHelman.setSymmetricKey(new String(DiffieHelman.decrypt(Encryption.base64Decode(encryptedKey), diffieHelman.getPrivateKey())));
 		diffieHelman.setExchangeSuccesful(true);
-		System.out.println("Key exchange succesfully received");
 	}
 
 	/**
