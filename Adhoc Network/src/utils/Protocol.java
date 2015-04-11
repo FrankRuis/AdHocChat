@@ -23,7 +23,7 @@ public class Protocol {
 			return ((InetAddress.getLocalHost().getAddress() [0] & 0xFF) << (3*8)) +
                     ((InetAddress.getLocalHost().getAddress() [1] & 0xFF) << (2*8)) +
                     ((InetAddress.getLocalHost().getAddress() [2] & 0xFF) << (1*8)) +
-                    (InetAddress.getLocalHost().getAddress() [3] &  0xFF);
+                    (InetAddress.getLocalHost().getAddress() [3] &  0xFF) + 1;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
@@ -82,7 +82,17 @@ public class Protocol {
 	public static final String NAME_CHANGE = "NMCHG";
 
 	/**
-	 * KEY_EXCHANGE protocol message for signalling a key exchange
+	 * PUB_KEY protocol message for signalling a public key
 	 */
-	public static final String KEY_EXCHANGE = "KEY";
+	public static final String PUB_KEY = "PUB";
+
+	/**
+	 * SYM_KEY protocol message for signalling a symmetric key
+	 */
+	public static final String SYM_KEY = "SYM";
+
+	/**
+	 * KEY_RECEIVED protocol message for signalling a successful key exchange
+	 */
+	public static final String KEY_RECEIVED = "KEYRECV";
 }

@@ -2,6 +2,9 @@ package test;
 
 import dataobjects.Packet;
 
+/**
+ * @author Frank
+ */
 public class TestPacket {
 
 	public static void main(String[] args) {

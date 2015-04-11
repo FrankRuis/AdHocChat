@@ -29,6 +29,7 @@ public class ClientSender extends Thread {
 	private final int WINDOW_SIZE;
 	
 	private MulticastSocket socket;
+	private Client client;
 
 	private Map<Integer, SendBuffer> openConnections;
 	
@@ -43,10 +44,11 @@ public class ClientSender extends Thread {
 	 * @param group The multicast group
 	 * @param port The port number
 	 */
-	public ClientSender(int windowSize, MulticastSocket socket, InetAddress group, int port) {
+	public ClientSender(int windowSize, MulticastSocket socket, InetAddress group, int port, Client client) {
 		this.socket = socket;
 		this.group = group;
 		this.port = port;
+		this.client = client;
 		WINDOW_SIZE = windowSize;
 		connected = true;
 		openConnections = new HashMap<>();
@@ -64,7 +66,9 @@ public class ClientSender extends Thread {
 	 * @param destination The destination of the connection
 	 */
 	public void openConnection(int destination) {
-		openConnections.put(destination, new SendBuffer(WINDOW_SIZE));
+		if (!openConnections.containsKey(destination)) {
+			openConnections.put(destination, new SendBuffer(WINDOW_SIZE));
+		}
 	}
 
 	/**
@@ -134,7 +138,7 @@ public class ClientSender extends Thread {
 					objectStream.flush();
 
 					// Put the resulting byte array in a packet and set the appropriate flags
-					byte[] buffer = Encryption.encrypt(byteStream.toByteArray());
+					byte[] buffer = Encryption.encrypt(byteStream.toByteArray(), client.getSymmetricKey(destination));
 					Packet packet = new Packet(buffer.length + Packet.HEADER_SIZE);
 					packet.setSource(Protocol.getSourceAddress());
 					packet.setDestination(destination);
@@ -199,7 +203,7 @@ public class ClientSender extends Thread {
 					SendBuffer sendBuffer = openConnections.get(destination);
 
 					// Build the packet
-					byte[] buffer = Encryption.encrypt(message.getBytes());
+					byte[] buffer = Encryption.encrypt(message.getBytes(), client.getSymmetricKey(destination));
 					Packet packet = new Packet(buffer.length + Packet.HEADER_SIZE);
 					packet.setSource(Protocol.getSourceAddress());
 					packet.setDestination(destination);
@@ -217,6 +221,8 @@ public class ClientSender extends Thread {
 					} else {
 						System.err.println("Send buffer full.");
 					}
+				} else {
+					System.err.println("Trying to send to an unopened connection.");
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -232,7 +238,7 @@ public class ClientSender extends Thread {
 	public void sendAliveBroadcast(String message, int destination) {
 		if (connected) {
 			try {
-				byte[] sendBuffer = Encryption.encrypt(message.getBytes());
+				byte[] sendBuffer = Encryption.encrypt(message.getBytes(), client.getSymmetricKey(destination));
 				Packet packet = new Packet(sendBuffer.length + Packet.HEADER_SIZE);
 				packet.setSource(Protocol.getSourceAddress());
 				packet.setDestination(destination);

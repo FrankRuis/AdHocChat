@@ -2,6 +2,8 @@ package client;
 
 import dataobjects.ChatMessage;
 import dataobjects.User;
+import encryption.DiffieHelman;
+import encryption.Encryption;
 import utils.Protocol;
 
 import java.io.IOException;
@@ -30,6 +32,7 @@ public class Client extends Observable implements Runnable {
 	
 	private Map<Integer, User> connectedUsers;
 	private Map<String, Set<Integer>> destinations;
+	private Map<Integer, DiffieHelman> keyPairs;
 
 	private long lastAliveBroadcast;
 	
@@ -42,6 +45,7 @@ public class Client extends Observable implements Runnable {
 
 		connectedUsers = new ConcurrentHashMap<>();
 		destinations = new HashMap<>();
+		keyPairs = new HashMap<>();
 
 		destinations.put(Protocol.MAINCHAT, new HashSet<Integer>());
 
@@ -59,7 +63,7 @@ public class Client extends Observable implements Runnable {
 			socket.joinGroup(group);
 			
 			// Create the send and receive buffers
-			clientSender = new ClientSender(20, socket, group, port);
+			clientSender = new ClientSender(20, socket, group, port, this);
 			clientListener = new ClientListener(20, socket, this);
 			clientSender.start();
 			clientListener.start();
@@ -91,7 +95,73 @@ public class Client extends Observable implements Runnable {
 			e.printStackTrace();
 		}
 	}
-	
+
+	/**
+	 * Start a diffie helman key exchange
+	 * @param destination The destination of the key exchange
+	 */
+	public void startKeyExchange(int destination) {
+		// Generate a public and private key pair for the new user
+		DiffieHelman diffieHelman = new DiffieHelman();
+		keyPairs.put(destination, diffieHelman);
+
+		// Send our public key to the given destination
+		sendMessage(Protocol.PUB_KEY + " " + diffieHelman.publicKeyToString(), destination);
+	}
+
+	/**
+	 * Successfully end the key exchange
+	 * @param destination The destination of the exchange
+	 */
+	public void endKeyExchange(int destination) {
+		System.out.println("Key exchange succesful");
+		keyPairs.get(destination).setExchangeSuccesful(true);
+	}
+
+	/**
+	 * Decrypt and set the symmetric key for the given destination
+	 * @param destination The destination
+	 * @param encryptedKey The encrypted symmetric key to set
+	 */
+	public void addAndDecryptSymmetricKey(int destination, String encryptedKey) {
+		// Let the other client know we received their key
+		sendMessage(Protocol.KEY_RECEIVED, destination);
+
+		DiffieHelman diffieHelman = keyPairs.get(destination);
+		diffieHelman.setSymmetricKey(new String(DiffieHelman.decrypt(Encryption.base64Decode(encryptedKey), diffieHelman.getPrivateKey())));
+		diffieHelman.setExchangeSuccesful(true);
+		System.out.println("Key exchange succesfully received");
+	}
+
+	/**
+	 * Add a symmetric key to a key pair
+	 * @param destination The destination using the same key
+	 * @param key The key
+	 */
+	public void addSymmetricKey(int destination, String key) {
+		DiffieHelman diffieHelman = new DiffieHelman();
+		diffieHelman.setSymmetricKey(key);
+		keyPairs.put(destination, diffieHelman);
+	}
+
+	/**
+	 * Get the symmetric key for the given destination
+	 * @param destination The destintion
+	 * @return The symmetric key
+	 */
+	public String getSymmetricKey(int destination) {
+		return (keyPairs.get(destination) != null && keyPairs.get(destination).isExchangeSuccesful()) ? keyPairs.get(destination).getSymmetricKey() : null;
+	}
+
+	/**
+	 * Open a connection with the given destination
+	 * @param destination The destination to open a conneciton with
+	 */
+	public void openConnection(int destination) {
+		clientSender.openConnection(destination);
+		clientListener.openConnection(destination);
+	}
+
 	/**
 	 * Add a user to the list of connected users
 	 * @param user The user to add
@@ -99,14 +169,20 @@ public class Client extends Observable implements Runnable {
 	public void addUser(User user) {
 		// If the user does not yet exist
 		if (user.getAddress() != Protocol.getSourceAddress() && !connectedUsers.containsKey(user.getAddress())) {
-			clientSender.openConnection(user.getAddress());
-			clientListener.openConnection(user.getAddress());
+			openConnection(user.getAddress());
+			openConnection(user.getAddress());
 			destinations.get(Protocol.MAINCHAT).add(user.getAddress());
+
+			// If we don't have a key for this user yet
+			if (!keyPairs.containsKey(user.getAddress())) {
+				// Start a key exchange
+				startKeyExchange(user.getAddress());
+			}
 		}
 
 		connectedUsers.put(user.getAddress(), user);
 	}
-	
+
 	/**
 	 * Remove a user from the list of connected users
 	 * @param address The user's address
@@ -145,16 +221,6 @@ public class Client extends Observable implements Runnable {
 	}
 
 	/**
-	 * Send a ChatMessage object
-	 * @param message The ChatMessage object to send
-	 */
-	public void sendChatMessage(ChatMessage message) {
-		for (int address : destinations.get(message.getDestination())) {
-			clientSender.sendChatMessage(message, address);
-		}
-	}
-
-	/**
 	 * Acknowledge the given acknowledgement number
 	 * @param ack The acknowledgement number to acknowledge
 	 * @param source  The source
@@ -186,6 +252,16 @@ public class Client extends Observable implements Runnable {
 	}
 
 	/**
+	 * Send a ChatMessage object
+	 * @param message The ChatMessage object to send
+	 */
+	public void sendChatMessage(ChatMessage message) {
+		for (int address : destinations.get(message.getDestination())) {
+			clientSender.sendChatMessage(message, address);
+		}
+	}
+
+	/**
 	 * Send a message
 	 * @param message The message to send
 	 * @param destination The destination address
@@ -194,6 +270,15 @@ public class Client extends Observable implements Runnable {
 		for (int address : destinations.get(destination)) {
 			clientSender.sendMessage(message, address);
 		}
+	}
+
+	/**
+	 * Send a message
+	 * @param message The message to send
+	 * @param destination The destination address
+	 */
+	public void sendMessage(String message, int destination) {
+		clientSender.sendMessage(message, destination);
 	}
 
 	/**

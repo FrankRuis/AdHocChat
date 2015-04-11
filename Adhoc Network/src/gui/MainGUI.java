@@ -299,7 +299,7 @@ public class MainGUI implements ActionListener, Observer {
 				
 				// Ask the user to enter a username
 				String username = (String) JOptionPane.showInputDialog(frame, "Enter your desired username:\n", "Username selection", JOptionPane.PLAIN_MESSAGE, null, null, "");
-				currentUser = new User(username.trim(), null);
+				currentUser = new User(username != null ? username.trim() : "Anonymous", null);
 				
 				// Set the user's address
 				currentUser.setAddress(Protocol.getSourceAddress());

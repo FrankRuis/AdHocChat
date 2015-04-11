@@ -3,6 +3,7 @@ package client;
 import dataobjects.ChatMessage;
 import dataobjects.Packet;
 import dataobjects.User;
+import encryption.DiffieHelman;
 import encryption.Encryption;
 import utils.Protocol;
 import utils.ReceiveBuffer;
@@ -58,7 +59,9 @@ public class ClientListener extends Thread {
 	 * @param destination The destination of the connection
 	 */
 	public void openConnection(int destination) {
-		openConnections.put(destination, new ReceiveBuffer(WINDOW_SIZE));
+		if (!openConnections.containsKey(destination)) {
+			openConnections.put(destination, new ReceiveBuffer(WINDOW_SIZE));
+		}
 	}
 
 	/**
@@ -116,9 +119,16 @@ public class ClientListener extends Thread {
 						// If we are the destination
 						if (packet.getDestination() == Protocol.BROADCAST || packet.getDestination() == Protocol.getSourceAddress()) {
 							// If the packet is encrypted
-							if (packet.isFlagSet(Packet.ENCRYPTION)) {
+							if (packet.isFlagSet(Packet.ENCRYPTION) && packet.getDestination() == Protocol.getSourceAddress()) {
+								// If possible, decrypt the packet with the symmetric key from a key exchange
+								byte[] decryptedPayload = Encryption.decrypt(packet.getPayload(), client.getSymmetricKey(packet.getSource()));
+								packet.setPayload(decryptedPayload);
+								packet.setLength(Packet.HEADER_SIZE + decryptedPayload.length);
+
+							// Packets with the broadcast address as the destination should be decrypted with the standard key
+							} else if (packet.isFlagSet(Packet.ENCRYPTION)) {
 								// Decrypt the packet
-								byte[] decryptedPayload = Encryption.decrypt(packet.getPayload());
+								byte[] decryptedPayload = Encryption.decrypt(packet.getPayload(), null);
 								packet.setPayload(decryptedPayload);
 								packet.setLength(Packet.HEADER_SIZE + decryptedPayload.length);
 							}
@@ -154,6 +164,9 @@ public class ClientListener extends Thread {
 											client.addDestination(command[1], packet.getSource());
 											client.notifyGUI(command[0] + " " + command[1]);
 										}
+
+										// Acknowledge the received packet
+										client.sendAck(packet.getSource(), packet.getSeq() + 1);
 										break;
 									// Refresh the user's 'alive' status
 									case Protocol.ALIVE:
@@ -183,7 +196,50 @@ public class ClientListener extends Thread {
 											client.notifyGUI(Protocol.NOTIFY + " User " + command[1] + " changed their name to " + command[2] + ".");
 											client.getUser(packet.getSource()).setName(command[2]);
 										}
+
+										// Acknowledge the received packet
+										client.sendAck(packet.getSource(), packet.getSeq() + 1);
 										break;
+
+									// We have received a public key
+									case Protocol.PUB_KEY:
+										// Open a connection with the packet sender
+										client.openConnection(packet.getSource());
+
+										// Acknowledge the received packet
+										client.sendAck(packet.getSource(), packet.getSeq() + 1);
+
+										// If the connection is open and the packet is accepted
+										if (openConnections.containsKey(packet.getSource()) && openConnections.get(packet.getSource()).addPacket(packet)) {
+											String generatedKey = Encryption.generateKey();
+											client.addSymmetricKey(packet.getSource(), generatedKey);
+
+											client.sendMessage(Protocol.SYM_KEY + " " + Encryption.base64Encode(DiffieHelman.encrypt(generatedKey.getBytes(), DiffieHelman.stringToPublicKey(new String(packet.getPayload()).split("\\s+", 2)[1]))), packet.getSource());
+										}
+										break;
+
+									// We have received a symmetric key
+									case Protocol.SYM_KEY:
+										// Acknowledge the received packet
+										client.sendAck(packet.getSource(), packet.getSeq() + 1);
+
+										// If the connection is open and the packet is accepted
+										if (openConnections.containsKey(packet.getSource()) && openConnections.get(packet.getSource()).addPacket(packet)) {
+											client.addAndDecryptSymmetricKey(packet.getSource(), new String(packet.getPayload()).split("\\s+", 2)[1]);
+										}
+										break;
+
+									// Successfully exchanged symmetric keys for encryption
+									case Protocol.KEY_RECEIVED:
+										// Acknowledge the received packet
+										client.sendAck(packet.getSource(), packet.getSeq() + 1);
+
+										// If the connection is open and the packet is accepted
+										if (openConnections.containsKey(packet.getSource()) && openConnections.get(packet.getSource()).addPacket(packet)) {
+											client.endKeyExchange(packet.getSource());
+										}
+										break;
+
 									// Command not known
 									default:
 										System.err.println("Received an unknown command.");
