@@ -1,11 +1,11 @@
 package client;
 
 import dataobjects.ChatMessage;
-import dataobjects.Packet;
 import dataobjects.User;
 import utils.Protocol;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.*;
@@ -67,7 +67,7 @@ public class Client extends Observable implements Runnable {
 			// Start the while loop
 			connected = true;
 
-			notifyGUI(Protocol.NOTIFY  + " Connected.");
+			notifyGUI(Protocol.NOTIFY + " Connected.");
 		} catch (IOException e) {
 			e.printStackTrace();
 			notifyGUI(Protocol.NOTIFY + " A problem occurred while connecting.");
@@ -200,7 +200,7 @@ public class Client extends Observable implements Runnable {
 	 * Forward the given packet
 	 * @param packet The packet to forward
 	 */
-	public void forwardPacket(Packet packet) {
+	public void forwardPacket(DatagramPacket packet) {
 		clientSender.forwardPacket(packet);
 	}
 	

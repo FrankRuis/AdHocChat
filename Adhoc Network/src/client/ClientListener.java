@@ -3,6 +3,7 @@ package client;
 import dataobjects.ChatMessage;
 import dataobjects.Packet;
 import dataobjects.User;
+import utils.Encryption;
 import utils.Protocol;
 import utils.ReceiveBuffer;
 
@@ -114,6 +115,11 @@ public class ClientListener extends Thread {
 					if (packet.getSource() != Protocol.getSourceAddress()) {
 						// If we are the destination
 						if (packet.getDestination() == Protocol.BROADCAST || packet.getDestination() == Protocol.getSourceAddress()) {
+							// Decrypt the packet
+							byte[] decryptedPayload = Encryption.decrypt(packet.getPayload());
+							packet.setPayload(decryptedPayload);
+							packet.setLength(Packet.HEADER_SIZE + decryptedPayload.length);
+
 							// If it is an acknowledgement
 							if (packet.isFlagSet(Packet.ACK)) {
 								// Handle the acknowledgement
@@ -133,7 +139,7 @@ public class ClientListener extends Thread {
 							// The payload is a command
 							} else {
 								// Split the command on whitespaces
-								String[] command = new String(packet.getPayload()).trim().split("\\s+");
+								String[] command = new String(packet.getPayload()).split("\\s+");
 
 								// Check the command type
 								switch (command[0]) {
@@ -164,7 +170,7 @@ public class ClientListener extends Thread {
 										}
 
 										// Forward the alive broadcast
-										client.forwardPacket(packet);
+										client.forwardPacket(datagramPacket);
 										break;
 
 									// Someone changed their name
@@ -185,7 +191,7 @@ public class ClientListener extends Thread {
 						// The packet was not meant for us
 						} else {
 							// Forward the packet
-							client.forwardPacket(packet);
+							client.forwardPacket(datagramPacket);
 						}
 					}
 				} else {

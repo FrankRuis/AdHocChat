@@ -196,6 +196,14 @@ public class Packet {
 	}
 
 	/**
+	 * Set the packet length
+	 * @param length The length to set
+	 */
+	public void setLength(int length) {
+		buffer.putInt(LEN_POS, length);
+	}
+
+	/**
 	 * @return The packet length in size
 	 */
 	public int getLength() {

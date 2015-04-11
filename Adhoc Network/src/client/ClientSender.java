@@ -2,6 +2,7 @@ package client;
 
 import dataobjects.ChatMessage;
 import dataobjects.Packet;
+import utils.Encryption;
 import utils.Protocol;
 import utils.SendBuffer;
 
@@ -133,7 +134,7 @@ public class ClientSender extends Thread {
 					objectStream.flush();
 
 					// Put the resulting byte array in a packet and set the appropriate flags
-					byte[] buffer = byteStream.toByteArray();
+					byte[] buffer = Encryption.encrypt(byteStream.toByteArray());
 					Packet packet = new Packet(buffer.length + Packet.HEADER_SIZE);
 					packet.setSource(Protocol.getSourceAddress());
 					packet.setDestination(destination);
@@ -166,10 +167,12 @@ public class ClientSender extends Thread {
 
 	/**
 	 * Forward the given packet
-	 * @param packet The packet to forward
+	 * @param datagramPacket The packet to forward
 	 */
-	public void forwardPacket(Packet packet) {
+	public void forwardPacket(DatagramPacket datagramPacket) {
 		try {
+			Packet packet = new Packet(datagramPacket);
+
 			// Decrease the maximum amount of hops
 			packet.decreaseHops();
 
@@ -196,7 +199,7 @@ public class ClientSender extends Thread {
 					SendBuffer sendBuffer = openConnections.get(destination);
 
 					// Build the packet
-					byte[] buffer = message.getBytes();
+					byte[] buffer = Encryption.encrypt(message.getBytes());
 					Packet packet = new Packet(buffer.length + Packet.HEADER_SIZE);
 					packet.setSource(Protocol.getSourceAddress());
 					packet.setDestination(destination);
@@ -228,7 +231,7 @@ public class ClientSender extends Thread {
 	public void sendAliveBroadcast(String message, int destination) {
 		if (connected) {
 			try {
-				byte[] sendBuffer = message.getBytes();
+				byte[] sendBuffer = Encryption.encrypt(message.getBytes());
 				Packet packet = new Packet(sendBuffer.length + Packet.HEADER_SIZE);
 				packet.setSource(Protocol.getSourceAddress());
 				packet.setDestination(destination);
