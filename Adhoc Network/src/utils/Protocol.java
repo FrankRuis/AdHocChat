@@ -1,5 +1,8 @@
 package utils;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 /**
  * Protocol used when communicating between clients
  *
@@ -15,7 +18,23 @@ public class Protocol {
 	/**
 	 * Source address
 	 */
-	public static final int SOURCE = 2;
+	public static final int SOURCE = 1;
+
+	/**
+	 * @return The source address as an integer
+	 */
+	public static int getSourceAddress() {
+		try {
+			return ((InetAddress.getLocalHost().getAddress() [0] & 0xFF) << (3*8)) +
+                    ((InetAddress.getLocalHost().getAddress() [1] & 0xFF) << (2*8)) +
+                    ((InetAddress.getLocalHost().getAddress() [2] & 0xFF) << (1*8)) +
+                    (InetAddress.getLocalHost().getAddress() [3] &  0xFF);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+
+		return -1;
+	}
 
 	/**
 	 * Max amount of milliseconds that a user can be inactive
