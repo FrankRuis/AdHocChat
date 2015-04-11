@@ -16,7 +16,8 @@ public class User implements Serializable {
 	
 	private String name;
 	private Color color;
-	
+	private Color textColor;
+
 	private int address;
 
 	private Timestamp lastSeen;
@@ -42,6 +43,7 @@ public class User implements Serializable {
 		float brightness = 0.85f;
 		
 		this.color = color != null ? color : Color.getHSBColor(hue, saturation, brightness);
+		this.textColor = Color.BLACK;
 	}
 
 	/**
@@ -71,6 +73,20 @@ public class User implements Serializable {
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	/**
+	 * @return the text color
+	 */
+	public Color getTextColor() {
+		return textColor;
+	}
+
+	/**
+	 * @param color the text color to set
+	 */
+	public void setTextColor(Color color) {
+		this.textColor = color;
 	}
 
 	/**

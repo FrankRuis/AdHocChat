@@ -7,6 +7,8 @@ import utils.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -30,8 +32,14 @@ public class MainGUI implements ActionListener, Observer {
 	private Map<String, JTextPane> chatPanes;
 	private Map<String, JScrollPane> scrollPanes;
 
+	private JMenu mOptions;
+
 	private JMenuItem miConnect;
 	private JMenuItem miDisconnect;
+
+	private JMenuItem miChangeNameColor;
+	private JMenuItem miChangeName;
+	private JMenuItem miChangeTextColor;
 	
 	private JTextField inputField;
 	private TextFieldKeyListener inputFieldListener;
@@ -291,7 +299,7 @@ public class MainGUI implements ActionListener, Observer {
 				
 				// Ask the user to enter a username
 				String username = (String) JOptionPane.showInputDialog(frame, "Enter your desired username:\n", "Username selection", JOptionPane.PLAIN_MESSAGE, null, null, "");
-				currentUser = new User(username, null);
+				currentUser = new User(username.trim(), null);
 				
 				// Set the user's address
 				currentUser.setAddress(Protocol.SOURCE);
@@ -310,6 +318,8 @@ public class MainGUI implements ActionListener, Observer {
 				// Start the client thread
 				Thread t = new Thread(client);
 				t.start();
+
+				mOptions.setEnabled(true);
 			} else {
 				showNotification("You are already connected.", Protocol.MAINCHAT);
 			}
@@ -330,9 +340,70 @@ public class MainGUI implements ActionListener, Observer {
 					tabPanel.removeTabAt(i);
 				}
 
+				mOptions.setEnabled(false);
+
 				showNotification("Disconnected.", Protocol.MAINCHAT);
 			} else {
 				showNotification("You are not connected.", Protocol.MAINCHAT);
+			}
+		}
+
+		// If the change name color menu item was pressed
+		if (source.equals(miChangeNameColor)) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					// Create a custom color chooser panel with only the HSV and preview panels
+					JColorChooser colorChooser = new JColorChooser();
+					AbstractColorChooserPanel[] chooserPanels = colorChooser.getChooserPanels();
+
+					JPanel hsvPanel = new JPanel();
+					chooserPanels[1].setBorder(new TitledBorder(chooserPanels[1].getDisplayName()));
+					hsvPanel.add(chooserPanels[1]);
+
+					JPanel colorChooserPanel = new JPanel(new BorderLayout(1,1));
+					colorChooserPanel.add(hsvPanel, BorderLayout.CENTER);
+
+					colorChooserPanel.add(colorChooser.getPreviewPanel(), BorderLayout.SOUTH);
+
+					JOptionPane.showMessageDialog(null, colorChooserPanel, "Choose a color", -1);
+
+					currentUser.setColor(colorChooser.getColor());
+				}
+			});
+		}
+
+		// If the change text color menu item was pressed
+		if (source.equals(miChangeTextColor)) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					// Create a custom color chooser panel with only the HSV and preview panels
+					JColorChooser colorChooser = new JColorChooser();
+					AbstractColorChooserPanel[] chooserPanels = colorChooser.getChooserPanels();
+
+					JPanel hsvPanel = new JPanel();
+					chooserPanels[1].setBorder(new TitledBorder(chooserPanels[1].getDisplayName()));
+					hsvPanel.add(chooserPanels[1]);
+
+					JPanel colorChooserPanel = new JPanel(new BorderLayout(1,1));
+					colorChooserPanel.add(hsvPanel, BorderLayout.CENTER);
+
+					colorChooserPanel.add(colorChooser.getPreviewPanel(), BorderLayout.SOUTH);
+
+					JOptionPane.showMessageDialog(null, colorChooserPanel, "Choose a color", -1);
+
+					currentUser.setTextColor(colorChooser.getColor());
+				}
+			});
+		}
+
+		// If the change name menu item was pressed
+		if (source.equals(miChangeName)) {
+			// Ask the user to enter a username
+			String username = (String) JOptionPane.showInputDialog(frame, "Enter your desired username:\n", "Username selection", JOptionPane.PLAIN_MESSAGE, null, null, "");
+
+			// Don't change the username if nothing was entered
+			if (username != null && !username.trim().isEmpty()){
+				currentUser.setName(username);
 			}
 		}
 	}
@@ -449,6 +520,9 @@ public class MainGUI implements ActionListener, Observer {
 		//Create the menu bar
 		JMenuBar menuBar = new JMenuBar();
 		JMenu mActions = new JMenu("Actions");
+		mOptions = new JMenu("Options");
+
+		mOptions.setEnabled(false);
 
 		// Create the connection menu items
 		miConnect = new JMenuItem("Connect");
@@ -459,8 +533,21 @@ public class MainGUI implements ActionListener, Observer {
 		mActions.add(miConnect);
 		mActions.add(miDisconnect);
 
-		// Add the actions menu to the menu bar
+		// Create the options menu items
+		miChangeName = new JMenuItem("Change name");
+		miChangeName.addActionListener(this);
+		miChangeNameColor = new JMenuItem("Change name color");
+		miChangeNameColor.addActionListener(this);
+		miChangeTextColor = new JMenuItem("Change text color");
+		miChangeTextColor.addActionListener(this);
+
+		mOptions.add(miChangeName);
+		mOptions.add(miChangeNameColor);
+		mOptions.add(miChangeTextColor);
+
+		// Add the menus to the menu bar
 		menuBar.add(mActions);
+		menuBar.add(mOptions);
 		frame.setJMenuBar(menuBar);
 		
 		// Create and add the west panel

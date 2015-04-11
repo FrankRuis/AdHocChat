@@ -5,7 +5,6 @@ import dataobjects.ChatMessage;
 import gui.MainGUI;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.LinkedList;
@@ -69,7 +68,7 @@ public class TextFieldKeyListener extends KeyAdapter {
 			}
 			
 			// Create a chat message object and send it to the GUI and client
-			ChatMessage chatMessage = new ChatMessage(gui.getCurrentUser(), Color.black, 16, "Calibri", false, false, message, gui.getActiveTab());
+			ChatMessage chatMessage = new ChatMessage(gui.getCurrentUser(), gui.getCurrentUser().getTextColor(), 16, "Calibri", false, false, message, gui.getActiveTab());
 			gui.append(chatMessage);
 			client.sendChatMessage(chatMessage);
 			source.setText("");
