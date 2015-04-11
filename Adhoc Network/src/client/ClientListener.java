@@ -166,6 +166,14 @@ public class ClientListener extends Thread {
 										// Forward the alive broadcast
 										client.forwardPacket(packet);
 										break;
+
+									// Someone changed their name
+									case Protocol.NAME_CHANGE:
+										// If the connection is open and the packet is accepted
+										if (openConnections.containsKey(packet.getSource()) && openConnections.get(packet.getSource()).addPacket(packet)) {
+											client.notifyGUI(Protocol.NOTIFY + " User " + command[1] + " changed their name to " + command[2] + ".");
+										}
+										break;
 									// Command not known
 									default:
 										System.err.println("Received an unknown command.");

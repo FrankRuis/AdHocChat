@@ -11,6 +11,11 @@ import java.net.MulticastSocket;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Main client class
+ *
+ * @author Frank
+ */
 public class Client extends Observable implements Runnable {
 	
 	private String address;

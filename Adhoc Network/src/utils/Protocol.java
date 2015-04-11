@@ -1,5 +1,10 @@
 package utils;
 
+/**
+ * Protocol used when communicating between clients
+ *
+ * @author Frank
+ */
 public class Protocol {
 
 	/**
@@ -10,7 +15,7 @@ public class Protocol {
 	/**
 	 * Source address
 	 */
-	public static final int SOURCE = 1;
+	public static final int SOURCE = 2;
 
 	/**
 	 * Max amount of milliseconds that a user can be inactive
@@ -56,4 +61,9 @@ public class Protocol {
 	 * PART protocol message used to signal a user leaving the chat
 	 */
 	public static final String PART = "PART";
+
+	/**
+	 * NAME_CHANGE protocol message for signaling a name change
+	 */
+	public static final String NAME_CHANGE = "NMCHG";
 }

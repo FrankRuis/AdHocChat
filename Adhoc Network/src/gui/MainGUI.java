@@ -365,7 +365,7 @@ public class MainGUI implements ActionListener, Observer {
 
 					colorChooserPanel.add(colorChooser.getPreviewPanel(), BorderLayout.SOUTH);
 
-					JOptionPane.showMessageDialog(null, colorChooserPanel, "Choose a color", -1);
+					JOptionPane.showMessageDialog(null, colorChooserPanel, "Choose a color", JOptionPane.PLAIN_MESSAGE);
 
 					currentUser.setColor(colorChooser.getColor());
 				}
@@ -389,7 +389,7 @@ public class MainGUI implements ActionListener, Observer {
 
 					colorChooserPanel.add(colorChooser.getPreviewPanel(), BorderLayout.SOUTH);
 
-					JOptionPane.showMessageDialog(null, colorChooserPanel, "Choose a color", -1);
+					JOptionPane.showMessageDialog(null, colorChooserPanel, "Choose a color", JOptionPane.PLAIN_MESSAGE);
 
 					currentUser.setTextColor(colorChooser.getColor());
 				}
@@ -403,6 +403,7 @@ public class MainGUI implements ActionListener, Observer {
 
 			// Don't change the username if nothing was entered
 			if (username != null && !username.trim().isEmpty()){
+				client.sendMessage(Protocol.NAME_CHANGE + " " + currentUser.getName() + " " + username, Protocol.MAINCHAT);
 				currentUser.setName(username);
 			}
 		}
