@@ -144,7 +144,7 @@ public class ClientSender extends Thread {
 					packet.setDestination(destination);
 					packet.setHops(Protocol.MAXHOPS);
 					packet.setSeq(sendBuffer.getSeq());
-					packet.setFlags(false, true, true);
+					packet.setFlags(false, true, true, client.isExchanged(destination));
 					packet.setPayload(buffer);
 					packet.setLength();
 					packet.setChecksum();
@@ -209,7 +209,7 @@ public class ClientSender extends Thread {
 					packet.setDestination(destination);
 					packet.setHops(Protocol.MAXHOPS);
 					packet.setSeq(sendBuffer.getSeq());
-					packet.setFlags(false, false, true);
+					packet.setFlags(false, false, true, client.isExchanged(destination));
 					packet.setPayload(buffer);
 					packet.setLength();
 					packet.setChecksum();
@@ -266,6 +266,7 @@ public class ClientSender extends Thread {
 					// Retransmit each unacked packet left in the buffer
 					for (Packet packet : buffer.getUnackedPackets().values()) {
 						try {
+							System.out.println("Retransmitting packet " + packet.getSeq());
 							socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
 						} catch (IOException e) {
 							e.printStackTrace();

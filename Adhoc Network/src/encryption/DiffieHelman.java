@@ -21,19 +21,21 @@ public class DiffieHelman {
     /**
      * Constructor, generates a public and a private key
      */
-    public DiffieHelman() {
+    public DiffieHelman(boolean generateKeys) {
         exchangeSuccesful = false;
 
-        try {
-            KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("RSA");
-            keyGenerator.initialize(1024);
+        if (generateKeys) {
+            try {
+                KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("RSA");
+                keyGenerator.initialize(1024);
 
-            KeyPair kPair = keyGenerator.genKeyPair();
+                KeyPair kPair = keyGenerator.genKeyPair();
 
-            priKey = kPair.getPrivate();
-            pubKey = kPair.getPublic();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+                priKey = kPair.getPrivate();
+                pubKey = kPair.getPublic();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
         }
     }
 

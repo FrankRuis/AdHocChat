@@ -102,7 +102,7 @@ public class Client extends Observable implements Runnable {
 	 */
 	public void startKeyExchange(int destination) {
 		// Generate a public and private key pair for the new user
-		DiffieHelman diffieHelman = new DiffieHelman();
+		DiffieHelman diffieHelman = new DiffieHelman(true);
 		keyPairs.put(destination, diffieHelman);
 
 		// Send our public key to the given destination
@@ -118,17 +118,25 @@ public class Client extends Observable implements Runnable {
 	}
 
 	/**
+	 * Check if the key exchange has finished
+	 * @param destination The destination to check
+	 * @return true if the key exchange is finished, else false
+	 */
+	public boolean isExchanged(int destination) {
+		return keyPairs.get(destination).isExchangeSuccesful();
+	}
+
+	/**
 	 * Decrypt and set the symmetric key for the given destination
 	 * @param destination The destination
 	 * @param encryptedKey The encrypted symmetric key to set
 	 */
 	public void addAndDecryptSymmetricKey(int destination, String encryptedKey) {
-		// Let the other client know we received their key
-		sendMessage(Protocol.KEY_RECEIVED, destination);
-
 		DiffieHelman diffieHelman = keyPairs.get(destination);
 		diffieHelman.setSymmetricKey(new String(DiffieHelman.decrypt(Encryption.base64Decode(encryptedKey), diffieHelman.getPrivateKey())));
-		diffieHelman.setExchangeSuccesful(true);
+
+		// Let the other client know we received their key
+		sendMessage(Protocol.KEY_RECEIVED, destination);
 	}
 
 	/**
@@ -137,7 +145,7 @@ public class Client extends Observable implements Runnable {
 	 * @param key The key
 	 */
 	public void addSymmetricKey(int destination, String key) {
-		DiffieHelman diffieHelman = new DiffieHelman();
+		DiffieHelman diffieHelman = new DiffieHelman(false);
 		diffieHelman.setSymmetricKey(key);
 		keyPairs.put(destination, diffieHelman);
 	}

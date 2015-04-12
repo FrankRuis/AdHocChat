@@ -8,7 +8,7 @@ import encryption.Encryption;
  */
 public class TestDiffieHelman {
     public static void main(String[] args) {
-        DiffieHelman diffieHelman = new DiffieHelman();
+        DiffieHelman diffieHelman = new DiffieHelman(true);
         String pubKey = diffieHelman.publicKeyToString();
         String generatedKey = Encryption.generateKey();
         String encryptedSymKey = Encryption.base64Encode(DiffieHelman.encrypt(generatedKey.getBytes(), DiffieHelman.stringToPublicKey(pubKey)));

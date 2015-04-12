@@ -119,7 +119,9 @@ public class ClientListener extends Thread {
 						// If we are the destination
 						if (packet.getDestination() == Protocol.BROADCAST || packet.getDestination() == Protocol.getSourceAddress()) {
 							// If the packet is encrypted
-							if (packet.isFlagSet(Packet.ENCRYPTION) && packet.getDestination() == Protocol.getSourceAddress()) {
+							if (packet.isFlagSet(Packet.ENCRYPTION) && packet.isFlagSet(Packet.KEYEXCHANGED)) {
+								client.endKeyExchange(packet.getSource());
+
 								// If possible, decrypt the packet with the symmetric key from a key exchange
 								byte[] decryptedPayload = Encryption.decrypt(packet.getPayload(), client.getSymmetricKey(packet.getSource()));
 								packet.setPayload(decryptedPayload);
