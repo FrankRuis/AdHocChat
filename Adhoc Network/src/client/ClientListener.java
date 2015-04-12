@@ -27,6 +27,7 @@ public class ClientListener extends Thread {
 	private final int WINDOW_SIZE;
 
 	private Map<Integer, ReceiveBuffer> openConnections;
+	private ReceiveBuffer forwardBuffer;
 	
 	private MulticastSocket socket;
 	private Client client;
@@ -44,6 +45,7 @@ public class ClientListener extends Thread {
 		this.client = client;
 		WINDOW_SIZE = windowSize;
 		openConnections = new LinkedHashMap<>();
+		forwardBuffer = new ReceiveBuffer(WINDOW_SIZE);
 		connected = true;
 	}
 
@@ -120,6 +122,7 @@ public class ClientListener extends Thread {
 						if (packet.getDestination() == Protocol.BROADCAST || packet.getDestination() == Protocol.getSourceAddress()) {
 							// If the packet is encrypted
 							if (packet.isFlagSet(Packet.ENCRYPTION) && packet.isFlagSet(Packet.KEYEXCHANGED)) {
+								// End the key exchange
 								client.endKeyExchange(packet.getSource());
 
 								// If possible, decrypt the packet with the symmetric key from a key exchange
@@ -214,9 +217,9 @@ public class ClientListener extends Thread {
 										// If the connection is open and the packet is accepted
 										if (openConnections.containsKey(packet.getSource()) && openConnections.get(packet.getSource()).addPacket(packet)) {
 											String generatedKey = Encryption.generateKey();
-											client.addSymmetricKey(packet.getSource(), generatedKey);
-
-											client.sendMessage(Protocol.SYM_KEY + " " + Encryption.base64Encode(DiffieHelman.encrypt(generatedKey.getBytes(), DiffieHelman.stringToPublicKey(new String(packet.getPayload()).split("\\s+", 2)[1]))), packet.getSource());
+											if (client.addSymmetricKey(packet.getSource(), generatedKey)) {
+												client.sendMessage(Protocol.SYM_KEY + " " + Encryption.base64Encode(DiffieHelman.encrypt(generatedKey.getBytes(), DiffieHelman.stringToPublicKey(new String(packet.getPayload()).split("\\s+", 2)[1]))), packet.getSource());
+											}
 										}
 										break;
 
@@ -251,8 +254,11 @@ public class ClientListener extends Thread {
 
 						// The packet was not meant for us
 						} else {
-							// Forward the packet
-							client.forwardPacket(datagramPacket);
+							// If we haven't forwarded this packet yet
+							if (forwardBuffer.addPacket(packet)) {
+								// Forward the packet
+								client.forwardPacket(datagramPacket);
+							}
 						}
 					}
 				} else {

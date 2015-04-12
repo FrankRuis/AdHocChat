@@ -144,10 +144,16 @@ public class Client extends Observable implements Runnable {
 	 * @param destination The destination using the same key
 	 * @param key The key
 	 */
-	public void addSymmetricKey(int destination, String key) {
-		DiffieHelman diffieHelman = new DiffieHelman(false);
-		diffieHelman.setSymmetricKey(key);
-		keyPairs.put(destination, diffieHelman);
+	public boolean addSymmetricKey(int destination, String key) {
+		if (!keyPairs.containsKey(destination)) {
+			DiffieHelman diffieHelman = new DiffieHelman(false);
+			diffieHelman.setSymmetricKey(key);
+			keyPairs.put(destination, diffieHelman);
+
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
