@@ -143,6 +143,7 @@ public class Client extends Observable implements Runnable {
 	 * Add a symmetric key to a key pair
 	 * @param destination The destination using the same key
 	 * @param key The key
+	 * @return true if the key was added, false if another key exchange is already in progress
 	 */
 	public boolean addSymmetricKey(int destination, String key) {
 		if (!keyPairs.containsKey(destination)) {

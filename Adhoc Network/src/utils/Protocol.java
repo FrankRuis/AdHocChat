@@ -54,7 +54,7 @@ public class Protocol {
 	/**
 	 * Max hops
 	 */
-	public static final short MAXHOPS = 4;
+	public static final short MAXHOPS = 3;
 
 	/**
 	 * Private chat protocol message

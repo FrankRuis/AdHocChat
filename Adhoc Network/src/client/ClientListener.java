@@ -217,6 +217,8 @@ public class ClientListener extends Thread {
 										// If the connection is open and the packet is accepted
 										if (openConnections.containsKey(packet.getSource()) && openConnections.get(packet.getSource()).addPacket(packet)) {
 											String generatedKey = Encryption.generateKey();
+
+											// Check if we aren't already exchanging keys with this user
 											if (client.addSymmetricKey(packet.getSource(), generatedKey)) {
 												client.sendMessage(Protocol.SYM_KEY + " " + Encryption.base64Encode(DiffieHelman.encrypt(generatedKey.getBytes(), DiffieHelman.stringToPublicKey(new String(packet.getPayload()).split("\\s+", 2)[1]))), packet.getSource());
 											}

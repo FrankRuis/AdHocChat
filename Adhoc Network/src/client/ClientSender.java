@@ -266,7 +266,6 @@ public class ClientSender extends Thread {
 					// Retransmit each unacked packet left in the buffer
 					for (Packet packet : buffer.getUnackedPackets().values()) {
 						try {
-							System.out.println("Retransmitting packet " + packet.getSeq());
 							socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
 						} catch (IOException e) {
 							e.printStackTrace();
