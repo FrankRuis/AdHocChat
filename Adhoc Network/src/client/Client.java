@@ -4,11 +4,11 @@ import dataobjects.ChatMessage;
 import dataobjects.User;
 import encryption.DiffieHelman;
 import encryption.Encryption;
+import utils.ForwardTable;
 import utils.Protocol;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,9 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Frank
  */
 public class Client extends Observable implements Runnable {
-	
-	private String address;
-	private InetAddress group;
+
 	private int port;
 	
 	private MulticastSocket socket;
@@ -29,6 +27,8 @@ public class Client extends Observable implements Runnable {
 	
 	private ClientSender clientSender;
 	private ClientListener clientListener;
+
+	private ForwardTable forwardTable;
 	
 	private Map<Integer, User> connectedUsers;
 	private Map<String, Set<Integer>> destinations;
@@ -39,9 +39,9 @@ public class Client extends Observable implements Runnable {
 	/**
 	 * Constructor
 	 */
-	public Client(String address, int port) {
-		this.address = address;
+	public Client(int port) {
 		this.port = port;
+		this.forwardTable = new ForwardTable(Protocol.getSourceAddress());
 
 		connectedUsers = new ConcurrentHashMap<>();
 		destinations = new HashMap<>();
@@ -59,11 +59,10 @@ public class Client extends Observable implements Runnable {
 		try {
 			// Create a multicast socket and join a multicast group
 			socket = new MulticastSocket(port);
-			group = InetAddress.getByName(address);
-			socket.joinGroup(group);
+			socket.joinGroup(Protocol.intAsInetAddress(Protocol.getBroadcastAddress()));
 			
 			// Create the send and receive buffers
-			(clientSender = new ClientSender(20, socket, group, port, this)).start();
+			(clientSender = new ClientSender(20, socket, port, this)).start();
 			(clientListener = new ClientListener(20, socket, this)).start();
 
 			// Start the while loop
@@ -87,11 +86,27 @@ public class Client extends Observable implements Runnable {
 			connected = false;
 			
 			// Leave the multicast group and close the socket
-			socket.leaveGroup(group);
+			socket.leaveGroup(Protocol.intAsInetAddress(Protocol.getBroadcastAddress()));
 			socket.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * @return The forward table
+	 */
+	public ForwardTable getForwardTable() {
+		return forwardTable;
+	}
+
+	/**
+	 * Get the next hop to reach the given destination
+	 * @param destination The destination
+	 * @return The next hop
+	 */
+	public int getNextHop(int destination) {
+		return forwardTable.getNextHop(destination);
 	}
 
 	/**
@@ -320,7 +335,7 @@ public class Client extends Observable implements Runnable {
 				removeInactiveUsers();
 
 				// Send an 'alive' broadcast to let others know we're here
-				clientSender.sendAliveBroadcast(Protocol.ALIVE + " " + connectedUsers.get(Protocol.getSourceAddress()).getName(), Protocol.BROADCAST);
+				clientSender.sendAliveBroadcast(Protocol.ALIVE + " " + connectedUsers.get(Protocol.getSourceAddress()).getName(), Protocol.getBroadcastAddress());
 				lastAliveBroadcast = System.currentTimeMillis();
 			}
 

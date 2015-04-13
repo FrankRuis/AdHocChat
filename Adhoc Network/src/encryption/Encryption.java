@@ -19,7 +19,7 @@ import java.security.SecureRandom;
  */
 public class Encryption {
     private static final String standardKey = "262b285e295e2d3c";
-    protected static final String iv = "65502a5c62515b64";
+    private static final String iv = "65502a5c62515b64";
 
     /**
      * Encrypt the given byte array

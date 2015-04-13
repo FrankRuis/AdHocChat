@@ -11,10 +11,10 @@ import java.security.spec.X509EncodedKeySpec;
  * @author Frank
  */
 public class DiffieHelman {
-    protected PrivateKey priKey;
-    protected PublicKey pubKey;
+    private PrivateKey priKey;
+    private PublicKey pubKey;
 
-    protected String symmetricKey;
+    private String symmetricKey;
 
     private boolean exchangeSuccesful;
 

@@ -302,7 +302,7 @@ public class MainGUI implements ActionListener, Observer {
 				currentUser.setAddress(Protocol.getSourceAddress());
 				
 				// Create the client and add the GUI as an observer
-				client = new Client("228.0.0.4", 1231);
+				client = new Client(1231);
 				client.addObserver(this);
 				
 				// Create a KeyListener for the textfield

@@ -114,12 +114,17 @@ public class ClientListener extends Thread {
 				socket.receive(datagramPacket);
 				Packet packet = new Packet(datagramPacket);
 
+				System.out.println("Received packet from " + datagramPacket.getAddress());
+
 				// Check the checksum
 				if (packet.getChecksum() == packet.calculateChecksum()) {
+					// Update forwarding table
+					client.getForwardTable().addEntry(datagramPacket);
+
 					// If the packet was not sent by us
 					if (packet.getSource() != Protocol.getSourceAddress() && Protocol.inetAddressAsInt(datagramPacket.getAddress()) != Protocol.getSourceAddress()) {
 						// If we are the destination
-						if (packet.getDestination() == Protocol.BROADCAST || packet.getDestination() == Protocol.getSourceAddress()) {
+						if (packet.getDestination() == Protocol.getBroadcastAddress() || packet.getDestination() == Protocol.getSourceAddress()) {
 							// If the packet is encrypted
 							if (packet.isFlagSet(Packet.ENCRYPTION) && packet.isFlagSet(Packet.KEYEXCHANGED)) {
 								// End the key exchange

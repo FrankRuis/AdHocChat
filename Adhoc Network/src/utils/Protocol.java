@@ -1,5 +1,6 @@
 package utils;
 
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -41,6 +42,23 @@ public class Protocol {
 	}
 
 	/**
+	 * Convert an integer to an InetAddress
+	 * @param address The address as an integer
+	 * @return he InetAddress
+	 */
+	public static InetAddress intAsInetAddress(int address) {
+		try {
+			byte[] bytes = BigInteger.valueOf(address).toByteArray();
+			return InetAddress.getByAddress(bytes);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+
+	/**
 	 * Max amount of milliseconds that a user can be inactive
 	 */
 	public static final long INACTIVITY_LIMIT = 9000l;
@@ -58,7 +76,15 @@ public class Protocol {
 	/**
 	 * Broadcast address
 	 */
-	public static final int BROADCAST = 0;
+	public static int getBroadcastAddress() {
+		try {
+			return inetAddressAsInt(InetAddress.getByName("228.0.0.4"));
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+
+		return -1;
+	}
 	
 	/**
 	 * Max hops

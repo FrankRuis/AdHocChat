@@ -11,7 +11,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,19 +33,16 @@ public class ClientSender extends Thread {
 	private Map<Integer, SendBuffer> openConnections;
 	
 	private boolean connected = false;
-	private InetAddress group;
 	private int port;
 
 	/**
 	 * Constructor
 	 * @param windowSize The maximum window size
 	 * @param socket The multicast socket
-	 * @param group The multicast group
 	 * @param port The port number
 	 */
-	public ClientSender(int windowSize, MulticastSocket socket, InetAddress group, int port, Client client) {
+	public ClientSender(int windowSize, MulticastSocket socket, int port, Client client) {
 		this.socket = socket;
-		this.group = group;
 		this.port = port;
 		this.client = client;
 		WINDOW_SIZE = windowSize;
@@ -111,7 +107,7 @@ public class ClientSender extends Thread {
 			packet.setLength();
 			packet.setChecksum();
 
-			socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
+			socket.send(new DatagramPacket(packet.getData(), packet.getLength(), Protocol.intAsInetAddress(client.getNextHop(destination)), port));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -155,7 +151,7 @@ public class ClientSender extends Thread {
 
 					// If we can send a packet, send it and add it to the buffer
 					if (sendBuffer.canSend()) {
-						socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
+						socket.send(new DatagramPacket(packet.getData(), packet.getLength(), Protocol.intAsInetAddress(client.getNextHop(destination)), port));
 						sendBuffer.addPacket(packet);
 					} else {
 						System.err.println("Send buffer full.");
@@ -183,7 +179,7 @@ public class ClientSender extends Thread {
 			// Only forward if the amount of hops is higher than zero
 			if (packet.getHops() > 0) {
 				packet.setChecksum();
-				socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
+				socket.send(new DatagramPacket(packet.getData(), packet.getLength(), Protocol.intAsInetAddress(client.getNextHop(packet.getDestination())), port));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -216,7 +212,7 @@ public class ClientSender extends Thread {
 
 					// If we can send a packet, send it and add it to the buffer
 					if (sendBuffer.canSend()) {
-						socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
+						socket.send(new DatagramPacket(packet.getData(), packet.getLength(), Protocol.intAsInetAddress(client.getNextHop(destination)), port));
 						sendBuffer.addPacket(packet);
 					} else {
 						System.err.println("Send buffer full.");
@@ -248,7 +244,7 @@ public class ClientSender extends Thread {
 				packet.setLength();
 				packet.setChecksum();
 
-				socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
+				socket.send(new DatagramPacket(packet.getData(), packet.getLength(), Protocol.intAsInetAddress(client.getNextHop(destination)), port));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -265,7 +261,7 @@ public class ClientSender extends Thread {
                 // Retransmit each unacked packet left in the buffer
                 for (Packet packet : buffer.getUnackedPackets().values()) {
                     try {
-                        socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
+                        socket.send(new DatagramPacket(packet.getData(), packet.getLength(), Protocol.intAsInetAddress(client.getNextHop(packet.getDestination())), port));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
