@@ -117,7 +117,7 @@ public class ClientListener extends Thread {
 				// Check the checksum
 				if (packet.getChecksum() == packet.calculateChecksum()) {
 					// If the packet was not sent by us
-					if (packet.getSource() != Protocol.getSourceAddress()) {
+					if (packet.getSource() != Protocol.getSourceAddress() && Protocol.inetAddressAsInt(datagramPacket.getAddress()) != Protocol.getSourceAddress()) {
 						// If we are the destination
 						if (packet.getDestination() == Protocol.BROADCAST || packet.getDestination() == Protocol.getSourceAddress()) {
 							// If the packet is encrypted
