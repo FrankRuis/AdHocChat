@@ -114,8 +114,6 @@ public class ClientListener extends Thread {
 				socket.receive(datagramPacket);
 				Packet packet = new Packet(datagramPacket);
 
-				System.out.println("Received packet from " + datagramPacket.getAddress());
-
 				// Check the checksum
 				if (packet.getChecksum() == packet.calculateChecksum()) {
 					// Update forwarding table
