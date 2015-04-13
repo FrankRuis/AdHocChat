@@ -63,10 +63,8 @@ public class Client extends Observable implements Runnable {
 			socket.joinGroup(group);
 			
 			// Create the send and receive buffers
-			clientSender = new ClientSender(20, socket, group, port, this);
-			clientListener = new ClientListener(20, socket, this);
-			clientSender.start();
-			clientListener.start();
+			(clientSender = new ClientSender(20, socket, group, port, this)).start();
+			(clientListener = new ClientListener(20, socket, this)).start();
 
 			// Start the while loop
 			connected = true;

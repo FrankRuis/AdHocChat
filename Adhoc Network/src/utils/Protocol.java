@@ -20,15 +20,24 @@ public class Protocol {
 	 */
 	public static int getSourceAddress() {
 		try {
-			return ((InetAddress.getLocalHost().getAddress() [0] & 0xFF) << (3*8)) +
-                    ((InetAddress.getLocalHost().getAddress() [1] & 0xFF) << (2*8)) +
-                    ((InetAddress.getLocalHost().getAddress() [2] & 0xFF) << (1*8)) +
-                    (InetAddress.getLocalHost().getAddress() [3] &  0xFF) + 1;
+			return Protocol.inetAddressAsInt(InetAddress.getLocalHost());
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
 
 		return -1;
+	}
+
+	/**
+	 * Convert an InetAddress to an integer
+	 * @param inetAddress The address to convert
+	 * @return The integer representation of the address
+	 */
+	public static int inetAddressAsInt(InetAddress inetAddress) {
+		return ((inetAddress.getAddress() [0] & 0xFF) << (3*8)) +
+				((inetAddress.getAddress() [1] & 0xFF) << (2*8)) +
+				((inetAddress.getAddress() [2] & 0xFF) << (1*8)) +
+				(inetAddress.getAddress() [3] &  0xFF);
 	}
 
 	/**
