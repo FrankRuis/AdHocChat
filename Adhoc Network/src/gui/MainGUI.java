@@ -47,24 +47,21 @@ public class MainGUI implements ActionListener, Observer {
 	private User currentUser;
 	
 	private Client client;
-	
-	// Whether or not timestamps should be displayed for messages and notifications
-	private boolean useTimestamps = true;
+
+	private boolean useTimestamps = true; // Whether or not timestamps should be displayed for messages and notifications
 	
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					MainGUI window = new MainGUI();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+		EventQueue.invokeLater(() -> {
+            try {
+                MainGUI window = new MainGUI();
+                window.frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
 	}
 
 	/**
@@ -350,50 +347,46 @@ public class MainGUI implements ActionListener, Observer {
 
 		// If the change name color menu item was pressed
 		if (source.equals(miChangeNameColor)) {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					// Create a custom color chooser panel with only the HSV and preview panels
-					JColorChooser colorChooser = new JColorChooser();
-					AbstractColorChooserPanel[] chooserPanels = colorChooser.getChooserPanels();
+			SwingUtilities.invokeLater(() -> {
+                // Create a custom color chooser panel with only the HSV and preview panels
+                JColorChooser colorChooser = new JColorChooser();
+                AbstractColorChooserPanel[] chooserPanels = colorChooser.getChooserPanels();
 
-					JPanel hsvPanel = new JPanel();
-					chooserPanels[1].setBorder(new TitledBorder(chooserPanels[1].getDisplayName()));
-					hsvPanel.add(chooserPanels[1]);
+                JPanel hsvPanel = new JPanel();
+                chooserPanels[1].setBorder(new TitledBorder(chooserPanels[1].getDisplayName()));
+                hsvPanel.add(chooserPanels[1]);
 
-					JPanel colorChooserPanel = new JPanel(new BorderLayout(1,1));
-					colorChooserPanel.add(hsvPanel, BorderLayout.CENTER);
+                JPanel colorChooserPanel = new JPanel(new BorderLayout(1,1));
+                colorChooserPanel.add(hsvPanel, BorderLayout.CENTER);
 
-					colorChooserPanel.add(colorChooser.getPreviewPanel(), BorderLayout.SOUTH);
+                colorChooserPanel.add(colorChooser.getPreviewPanel(), BorderLayout.SOUTH);
 
-					JOptionPane.showMessageDialog(null, colorChooserPanel, "Choose a color", JOptionPane.PLAIN_MESSAGE);
+                JOptionPane.showMessageDialog(null, colorChooserPanel, "Choose a color", JOptionPane.PLAIN_MESSAGE);
 
-					currentUser.setColor(colorChooser.getColor());
-				}
-			});
+                currentUser.setColor(colorChooser.getColor());
+            });
 		}
 
 		// If the change text color menu item was pressed
 		if (source.equals(miChangeTextColor)) {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					// Create a custom color chooser panel with only the HSV and preview panels
-					JColorChooser colorChooser = new JColorChooser();
-					AbstractColorChooserPanel[] chooserPanels = colorChooser.getChooserPanels();
+			SwingUtilities.invokeLater(() -> {
+                // Create a custom color chooser panel with only the HSV and preview panels
+                JColorChooser colorChooser = new JColorChooser();
+                AbstractColorChooserPanel[] chooserPanels = colorChooser.getChooserPanels();
 
-					JPanel hsvPanel = new JPanel();
-					chooserPanels[1].setBorder(new TitledBorder(chooserPanels[1].getDisplayName()));
-					hsvPanel.add(chooserPanels[1]);
+                JPanel hsvPanel = new JPanel();
+                chooserPanels[1].setBorder(new TitledBorder(chooserPanels[1].getDisplayName()));
+                hsvPanel.add(chooserPanels[1]);
 
-					JPanel colorChooserPanel = new JPanel(new BorderLayout(1,1));
-					colorChooserPanel.add(hsvPanel, BorderLayout.CENTER);
+                JPanel colorChooserPanel = new JPanel(new BorderLayout(1,1));
+                colorChooserPanel.add(hsvPanel, BorderLayout.CENTER);
 
-					colorChooserPanel.add(colorChooser.getPreviewPanel(), BorderLayout.SOUTH);
+                colorChooserPanel.add(colorChooser.getPreviewPanel(), BorderLayout.SOUTH);
 
-					JOptionPane.showMessageDialog(null, colorChooserPanel, "Choose a color", JOptionPane.PLAIN_MESSAGE);
+                JOptionPane.showMessageDialog(null, colorChooserPanel, "Choose a color", JOptionPane.PLAIN_MESSAGE);
 
-					currentUser.setTextColor(colorChooser.getColor());
-				}
-			});
+                currentUser.setTextColor(colorChooser.getColor());
+            });
 		}
 
 		// If the change name menu item was pressed
@@ -413,35 +406,34 @@ public class MainGUI implements ActionListener, Observer {
 	public void update(Observable o, final Object arg) {
 		try {
 			// Wait until all events have been processed before updating the GUI
-			SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    // If the argument is a ChatMessage object
-                    if (arg.getClass().equals(ChatMessage.class)) {
-                        append((ChatMessage) arg);
-                    }
+			SwingUtilities.invokeAndWait(() -> {
+                // If the argument is a ChatMessage object
+                if (arg.getClass().equals(ChatMessage.class)) {
+                    append((ChatMessage) arg);
+                }
 
-                    // If the argument is a String
-                    if (arg.getClass().equals(String.class)) {
-                        // Split the string on the first space
-                        final String[] command = ((String) arg).split("\\s+", 2);
+                // If the argument is a String
+                if (arg.getClass().equals(String.class)) {
+                    // Split the string on the first space
+                    final String[] command = ((String) arg).split("\\s+", 2);
 
-                        // Check the command type
-                        switch (command[0]) {
-                            case Protocol.PRIVCHAT:
-                                newTab(command[1]);
-                                break;
-                            case Protocol.NOTIFY:
-                                showNotification(command[1], Protocol.MAINCHAT);
-                                break;
-                            case Protocol.PART:
-                                showNotification("User " + command[1] + " has left the chat.", Protocol.MAINCHAT);
-                                break;
-                            default:
-								System.err.println("Unknown command received in GUI.");
-								break;
-                        }
+                    // Check the command type
+                    switch (command[0]) {
+                        case Protocol.PRIVCHAT:
+                            newTab(command[1]);
+                            break;
+                        case Protocol.NOTIFY:
+                            showNotification(command[1], Protocol.MAINCHAT);
+                            break;
+                        case Protocol.PART:
+                            showNotification("User " + command[1] + " has left the chat.", Protocol.MAINCHAT);
+                            break;
+                        default:
+                            System.err.println("Unknown command received in GUI.");
+                            break;
                     }
-                }});
+                }
+            });
 		} catch (InterruptedException | InvocationTargetException e) {
 			e.printStackTrace();
 		}

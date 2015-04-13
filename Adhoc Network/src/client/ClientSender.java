@@ -259,20 +259,18 @@ public class ClientSender extends Thread {
 	public void run() {
 		// Create a retransmission scheduler
 		ScheduledExecutorService retransmitScheduler = Executors.newScheduledThreadPool(1);
-		retransmitScheduler.scheduleAtFixedRate(new Runnable() {
-			public void run() {
-				// Go through all open connections
-				for (SendBuffer buffer : openConnections.values()) {
-					// Retransmit each unacked packet left in the buffer
-					for (Packet packet : buffer.getUnackedPackets().values()) {
-						try {
-							socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-		}, Protocol.TIMEOUT, Protocol.TIMEOUT, TimeUnit.MILLISECONDS);
+		retransmitScheduler.scheduleAtFixedRate(() -> {
+            // Go through all open connections
+            for (SendBuffer buffer : openConnections.values()) {
+                // Retransmit each unacked packet left in the buffer
+                for (Packet packet : buffer.getUnackedPackets().values()) {
+                    try {
+                        socket.send(new DatagramPacket(packet.getData(), packet.getLength(), group, port));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }, Protocol.TIMEOUT, Protocol.TIMEOUT, TimeUnit.MILLISECONDS);
 	}
 }

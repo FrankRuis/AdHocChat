@@ -52,25 +52,26 @@ public class TextFieldKeyListener extends KeyAdapter {
 			// Get the text from the text field
 			String message = source.getText();
 			
-			// Add the message to the history
-			if (!messageHistory.contains(message)) {
-				messageHistory.push(message);
-				
-			// Add the message to the start of the history if it already exists
-			} else {
-				messageHistory.remove(message);
-				messageHistory.push(message);
-			}
-			
-			// Make sure the message history limit is not exceeded
-			if (messageHistory.size() > MAX_HISTORY) {
-				messageHistory.removeLast();
-			}
-			
 			// Create a chat message object and send it to the GUI and client
 			ChatMessage chatMessage = new ChatMessage(gui.getCurrentUser(), gui.getCurrentUser().getTextColor(), 16, "Calibri", false, false, message, gui.getActiveTab());
 			gui.append(chatMessage);
 			client.sendChatMessage(chatMessage);
+
+			// Add the message to the history
+			if (!messageHistory.contains(message)) {
+				messageHistory.push(message);
+
+				// Add the message to the start of the history if it already exists
+			} else {
+				messageHistory.remove(message);
+				messageHistory.push(message);
+			}
+
+			// Make sure the message history limit is not exceeded
+			if (messageHistory.size() > MAX_HISTORY) {
+				messageHistory.removeLast();
+			}
+
 			source.setText("");
 			historyPos = 0;
 		}
