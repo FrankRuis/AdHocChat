@@ -229,10 +229,11 @@ public class ClientSender extends Thread {
 	/**
 	 * Send a message to the given destination
 	 * @param message The message to send
-	 * @param destination The destination address
 	 */
-	public void sendAliveBroadcast(String message, int destination) {
+	public void sendAliveBroadcast(String message) {
 		if (connected) {
+			int destination = Protocol.getBroadcastAddress();
+
 			try {
 				byte[] sendBuffer = Encryption.encrypt(message.getBytes(), null);
 				Packet packet = new Packet(sendBuffer.length + Packet.HEADER_SIZE);
@@ -244,7 +245,7 @@ public class ClientSender extends Thread {
 				packet.setLength();
 				packet.setChecksum();
 
-				socket.send(new DatagramPacket(packet.getData(), packet.getLength(), Protocol.intAsInetAddress(client.getNextHop(destination)), port));
+				socket.send(new DatagramPacket(packet.getData(), packet.getLength(), Protocol.intAsInetAddress(destination), port));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

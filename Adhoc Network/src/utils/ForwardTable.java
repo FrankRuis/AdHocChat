@@ -26,6 +26,11 @@ public class ForwardTable {
         int destination = packet.getSource();
         int cost = Protocol.MAXHOPS - packet.getHops() + 1;
         int nextHop = Protocol.inetAddressAsInt(datagramPacket.getAddress());
+
+        if (nextHop == Protocol.getBroadcastAddress() && packet.getHops() == Protocol.MAXHOPS) {
+            nextHop = destination;
+        }
+
         ForwardTableEntry fte = new ForwardTableEntry(cost, nextHop);
 
         // If the packet's source is different from ours

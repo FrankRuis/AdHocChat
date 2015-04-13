@@ -335,7 +335,7 @@ public class Client extends Observable implements Runnable {
 				removeInactiveUsers();
 
 				// Send an 'alive' broadcast to let others know we're here
-				clientSender.sendAliveBroadcast(Protocol.ALIVE + " " + connectedUsers.get(Protocol.getSourceAddress()).getName(), Protocol.getBroadcastAddress());
+				clientSender.sendAliveBroadcast(Protocol.ALIVE + " " + connectedUsers.get(Protocol.getSourceAddress()).getName());
 				lastAliveBroadcast = System.currentTimeMillis();
 			}
 

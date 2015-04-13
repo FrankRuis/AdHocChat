@@ -22,6 +22,7 @@ public class Protocol {
 	public static int getSourceAddress() {
 		try {
 			return Protocol.inetAddressAsInt(InetAddress.getLocalHost());
+			//return Protocol.inetAddressAsInt(InetAddress.getByName("192.168.5.1"));
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
