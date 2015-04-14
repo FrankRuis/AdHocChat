@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Bart on 13/04/2015.
+ * Forwarding table class
+ *
+ * @author Bart
  */
 public class ForwardTable {
 

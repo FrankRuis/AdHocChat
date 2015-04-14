@@ -258,7 +258,10 @@ public class ClientSender extends Thread {
 		ScheduledExecutorService retransmitScheduler = Executors.newScheduledThreadPool(1);
 		retransmitScheduler.scheduleAtFixedRate(() -> {
             // Go through all open connections
-            for (SendBuffer buffer : openConnections.values()) {
+            for (int destination : openConnections.keySet()) {
+				// Get the buffer
+				SendBuffer buffer = openConnections.get(destination);
+
                 // Retransmit each unacked packet left in the buffer
                 for (Packet packet : buffer.getUnackedPackets().values()) {
                     try {
@@ -267,6 +270,11 @@ public class ClientSender extends Thread {
                         e.printStackTrace();
                     }
                 }
+
+				// Clear this destination's forwarding table entry if the buffer is full
+				if (!buffer.canSend()) {
+					client.getForwardTable().removeEntry(destination);
+				}
             }
         }, Protocol.TIMEOUT, Protocol.TIMEOUT, TimeUnit.MILLISECONDS);
 	}
