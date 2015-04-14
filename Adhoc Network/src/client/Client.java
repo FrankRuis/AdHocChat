@@ -218,6 +218,8 @@ public class Client extends Observable implements Runnable {
 		clientSender.closeConnection(address);
 		clientListener.closeConnection(address);
 
+		forwardTable.removeEntry(address);
+
 		if (destinations.get(Protocol.MAINCHAT).contains(address)) {
 			destinations.get(Protocol.MAINCHAT).remove(address);
 		}
